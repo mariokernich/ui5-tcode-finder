@@ -9,7 +9,7 @@ opaTest("Should open the Hello dialog", function () {
 	// Arrangements
 	onTheMainPage.iStartMyUIComponent({
 		componentConfig: {
-			name: "ch.kerni.tcode",
+			name: "de.kernich.tcodes",
 		},
 	});
 
@@ -33,7 +33,7 @@ opaTest("Should close the Hello dialog", function () {
 	// Arrangements
 	onTheMainPage.iStartMyUIComponent({
 		componentConfig: {
-			name: "ch.kerni.tcode",
+			name: "de.kernich.tcodes",
 		},
 	});
 

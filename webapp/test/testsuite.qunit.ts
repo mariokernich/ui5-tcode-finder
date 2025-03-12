@@ -1,7 +1,7 @@
 export default {
-	name: "QUnit test suite for the UI5 Application: ch.kerni.tcode",
+	name: "QUnit test suite for the UI5 Application: de.kernich.tcodes",
 	defaults: {
-		page: "ui5://test-resources/ch/kerni/tcode/Test.qunit.html?testsuite={suite}&test={name}",
+		page: "ui5://test-resources/de/kernich/tcodes/Test.qunit.html?testsuite={suite}&test={name}",
 		qunit: {
 			version: 2,
 		},
@@ -13,21 +13,21 @@ export default {
 			theme: "sap_horizon",
 		},
 		coverage: {
-			only: "ch/kerni/tcode/",
-			never: "test-resources/ch/kerni/tcode/",
+			only: "de/kernich/tcodes/",
+			never: "test-resources/de/kernich/tcodes/",
 		},
 		loader: {
 			paths: {
-				"ch/kerni/tcode": "../",
+				"de/kernich/tcodes": "../",
 			},
 		},
 	},
 	tests: {
 		"unit/unitTests": {
-			title: "Unit tests for ch.kerni.tcode",
+			title: "Unit tests for de.kernich.tcodes",
 		},
 		"integration/opaTests": {
-			title: "Integration tests for ch.kerni.tcode",
+			title: "Integration tests for de.kernich.tcodes",
 		},
 	},
 };

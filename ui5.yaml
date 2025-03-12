@@ -1,6 +1,6 @@
 specVersion: "4.0"
 metadata:
-  name: ch.kerni.tcode
+  name: de.kernich.tcodes
 type: application
 framework:
   name: OpenUI5

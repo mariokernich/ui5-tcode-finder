@@ -1,7 +1,7 @@
 import BaseController from "./BaseController";
 
 /**
- * @namespace ch.kerni.tcode.controller
+ * @namespace de.kernich.tcodes.controller
  */
 export default class App extends BaseController {
 	public onInit(): void {

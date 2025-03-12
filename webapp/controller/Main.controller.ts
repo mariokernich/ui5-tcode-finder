@@ -23,7 +23,7 @@ import VBox from "sap/m/VBox";
 type Action = keyof MessageBox["Action"];
 
 /**
- * @namespace ch.kerni.tcode.controller
+ * @namespace de.kernich.tcodes.controller
  */
 export default class Main extends BaseController {
 	private db: Database;
@@ -89,7 +89,7 @@ export default class Main extends BaseController {
 							<p>This tool helps you quickly find and manage transaction codes (T-Codes) relevant to UI5 and Fiori development. You can search, copy, and favorite T-Codes for easy access. Enjoy your development journey! 🌟</p>
 							<p>Simply <strong>click</strong> on a T-Code <strong>to copy</strong> it to your clipboard. You can also <strong>add your own T-Codes</strong>, delete them, or reset to factory defaults.</p>
 							<p>To edit a T-Code, just right click any cell item.</p>
-							<p>If you have any feedback or feature requests, feel free to open an <a href="https://github.com/marioke/ch.kerni.tcode/issues" target="_blank">issue on GitHub</a> 🚀</p>
+							<p>If you have any feedback or feature requests, feel free to open an <a href="https://github.com/marioke/de.kernich.tcodes/issues" target="_blank">issue on GitHub</a> 🚀</p>
 						`,
 					}).addStyleClass("sapUiSmallMarginBegin sapUiSmallMarginEnd"),
 					checkBox,

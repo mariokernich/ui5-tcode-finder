@@ -2,7 +2,7 @@
 	"_version": "1.12.0",
 
 	"sap.app": {
-		"id": "ch.kerni.tcode",
+		"id": "de.kernich.tcodes",
 		"type": "application",
 		"i18n": "i18n/i18n.properties",
 		"title": "{{appTitle}}",
@@ -24,7 +24,7 @@
 
 	"sap.ui5": {
 		"rootView": {
-			"viewName": "ch.kerni.tcode.view.App",
+			"viewName": "de.kernich.tcodes.view.App",
 			"type": "XML",
 			"async": true,
 			"id": "app"
@@ -49,7 +49,7 @@
 			"i18n": {
 				"type": "sap.ui.model.resource.ResourceModel",
 				"settings": {
-					"bundleName": "ch.kerni.tcode.i18n.i18n"
+					"bundleName": "de.kernich.tcodes.i18n.i18n"
 				}
 			}
 		},
@@ -58,7 +58,7 @@
 			"config": {
 				"routerClass": "sap.m.routing.Router",
 				"viewType": "XML",
-				"viewPath": "ch.kerni.tcode.view",
+				"viewPath": "de.kernich.tcodes.view",
 				"controlId": "app",
 				"controlAggregation": "pages",
 				"async": true
