@@ -112,5 +112,17 @@
 		"description": "Gateway Client",
 		"tags": ["UI5", "Fiori", "OData"],
 		"favorite": false
+	},
+	{
+		"tcode": "/UI2/CACHE",
+		"description": "Register service for UI2 cache use",
+		"tags": ["UI5", "Fiori"],
+		"favorite": false
+	},
+	{
+		"tcode": "/UI2/CACHE_DEL",
+		"description": "Delete cache entries",
+		"tags": ["UI5", "Fiori"],
+		"favorite": false
 	}
 ]
