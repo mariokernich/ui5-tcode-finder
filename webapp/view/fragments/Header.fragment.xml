@@ -1,0 +1,10 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:core="sap.ui.core"
+>
+    <HBox alignItems="Center">
+        <Text
+            text="Search relevant T-Codes for UI5 and Fiori and add your own T-Codes"
+        />
+    </HBox>
+</core:FragmentDefinition>

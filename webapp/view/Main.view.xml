@@ -1,0 +1,122 @@
+<mvc:View
+    controllerName="ch.kerni.tcode.controller.Main"
+    displayBlock="true"
+    xmlns="sap.m"
+    xmlns:mvc="sap.ui.core.mvc"
+    xmlns:core="sap.ui.core"
+    core:require="{
+		formatter: 'ch/kerni/tcode/model/formatter'
+	}"
+>
+    <Page id="page">
+        <customHeader>
+            <OverflowToolbar>
+                <core:Icon
+                    src="sap-icon://sap-ui5"
+                    size="3rem"
+                />
+                <Title text="UI5/Fiori T-Code search" />
+                <ToolbarSpacer />
+                <SearchField
+                    placeholder="Search for transaction..."
+                    liveChange=".onSearch"
+                    width="500px"
+                    id="IdSearchField"
+                />
+                <ToolbarSpacer />
+
+                <Button
+                    icon="img/github-brands.svg"
+                    text="View on GitHub"
+                    press="window.open('https://github.com/marioke/ch.kerni.tcode', '_blank')"
+                    tooltip="GitHub Repository"
+                />
+                <Button
+                    icon="img/linkedin-brands.svg"
+                    text="Mario Kernich"
+                    press="window.open('https://www.linkedin.com/in/mario-kernich/', '_blank')"
+                    tooltip="GitHub Repository"
+                />
+            </OverflowToolbar>
+        </customHeader>
+        <VBox
+            justifyContent="Start"
+            alignItems="Center"
+            alignContent="Center"
+        >
+            <Table
+                id="transactionTable"
+                items="{ path: '/' }"
+                mode="MultiSelect"
+                selectionChange=".onSelectionChange"
+                itemPress=".onRowPress"
+            >
+                <contextMenu>
+                    <Menu>
+                        <MenuItem
+                            text="Edit"
+                            icon="sap-icon://edit"
+                            press=".onEditTransaction"
+                        />
+                    </Menu>
+                </contextMenu>
+                <columns>
+                    <Column width="200px">
+                        <Text text="Transaction code" />
+                    </Column>
+                    <Column>
+                        <Text text="Description" />
+                    </Column>
+                    <Column hAlign="Right" />
+                </columns>
+                <items>
+                    <ColumnListItem
+                        type="Active"
+                        press=".onRowPress"
+                    >
+                        <cells>
+                            <Text text="{= ${tcode}.toUpperCase() }" />
+                            <Text text="{ path: 'description' }" />
+                            <HBox justifyContent="End">
+                                <Button
+                                    icon="{= ${favorite} ? 'sap-icon://favorite' : 'sap-icon://unfavorite' }"
+                                    press=".onToggleFavorite"
+                                    type="Transparent"
+                                />
+                            </HBox>
+                        </cells>
+                    </ColumnListItem>
+                </items>
+            </Table>
+        </VBox>
+        <footer>
+            <OverflowToolbar>
+                <Button
+                    id="deleteButton"
+                    icon="sap-icon://delete"
+                    press=".onDeleteTransaction"
+                    tooltip="Delete selected transactions"
+                    text="Delete"
+                    type="Reject"
+                    enabled="false"
+                />
+                <ToolbarSpacer />
+                <Button
+                    icon="sap-icon://add-document"
+                    press=".onAddTransaction"
+                    tooltip="Add new transaction"
+                    text="New"
+                    type="Ghost"
+                />
+
+                <Button
+                    icon="sap-icon://action-settings"
+                    press=".onOpenSettings"
+                    tooltip="Open settings"
+                    text="Settings"
+                    type="Ghost"
+                />
+            </OverflowToolbar>
+        </footer>
+    </Page>
+</mvc:View>

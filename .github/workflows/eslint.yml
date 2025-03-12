@@ -1,0 +1,28 @@
+name: ESLint check
+
+on:
+  push:
+
+jobs:
+  build:
+    permissions:
+      contents: read
+      packages: read
+
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [22.x]
+
+    steps:
+      - name: 🔨 checkout repository
+        uses: actions/checkout@v4
+      - name: 🔨 use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+      - name: 🔨 install package dependencies
+        run: npm install
+      - name: 🔨 run lint check
+        run: npm run lint

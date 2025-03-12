@@ -1,0 +1,116 @@
+[
+	{
+		"tcode": "SE80",
+		"description": "Object Navigator",
+		"tags": ["ABAP", "Development"],
+		"favorite": false
+	},
+	{
+		"tcode": "SE11",
+		"description": "Data Dictionary",
+		"tags": ["ABAP", "Development"],
+		"favorite": false
+	},
+	{
+		"tcode": "SE10",
+		"description": "Transport Organizer",
+		"tags": ["ABAP", "Development"],
+		"favorite": false
+	},
+	{
+		"tcode": "/ui2/flp",
+		"description": "Open Fiori Launchpad",
+		"tags": ["UI5", "Fiori"],
+		"favorite": false
+	},
+	{
+		"tcode": "/IWBEP/V4_ADMIN",
+		"description": "ODataV4 Service administration",
+		"tags": ["UI5", "OData"],
+		"favorite": false
+	},
+	{
+		"tcode": "SEGW",
+		"description": "ODataV2 Service Builder",
+		"tags": ["UI5", "Fiori", "ABAP", "OData"],
+		"favorite": false
+	},
+	{
+		"tcode": "SICF",
+		"description": "HTTP Service Hierarchy Maintenance",
+		"tags": ["UI5", "Fiori", "ABAP"],
+		"favorite": false
+	},
+	{
+		"tcode": "SU01",
+		"description": "User Maintenance",
+		"tags": ["UI5", "Fiori", "Security"],
+		"favorite": false
+	},
+	{
+		"tcode": "PFCG",
+		"description": "Role Maintenance",
+		"tags": ["UI5", "Fiori", "Security"],
+		"favorite": false
+	},
+	{
+		"tcode": "ST22",
+		"description": "ABAP Dump Analysis",
+		"tags": ["UI5", "Fiori", "ABAP"],
+		"favorite": false
+	},
+	{
+		"tcode": "/UI2/FLPD_CUST",
+		"description": "Fiori Launchpad Designer (Customization)",
+		"tags": ["UI5", "Fiori"],
+		"favorite": false
+	},
+	{
+		"tcode": "/UI2/FLPD_CONF",
+		"description": "Fiori Launchpad Designer (Configuration)",
+		"tags": ["UI5", "Fiori"],
+		"favorite": false
+	},
+	{
+		"tcode": "/UI5/THEME_DESIGNER",
+		"description": "UI Theme Designer",
+		"tags": ["UI5", "Fiori", "Theme"],
+		"favorite": false
+	},
+	{
+		"tcode": "/UI5/THEME_TOOL",
+		"description": "UI Theme Tool. Upload and Download Themes",
+		"tags": ["UI5", "Fiori", "Theme"],
+		"favorite": false
+	},
+	{
+		"tcode": "/IWFND/MAINT_SERVICE",
+		"description": "Gateway Service Maintenance",
+		"tags": ["UI5", "Fiori", "OData"],
+		"favorite": false
+	},
+	{
+		"tcode": "/IWFND/ERROR_LOG",
+		"description": "Gateway Error Log",
+		"tags": ["UI5", "Fiori", "OData"],
+		"favorite": false
+	},
+	{
+		"tcode": "/UI2/SEMOBJ",
+		"description": "Semantic Object Maintenance",
+		"tags": ["UI5", "Fiori"],
+		"favorite": false
+	},
+	{
+		"tcode": "/UI2/FLP_CUS_CONF",
+		"description": "Fiori Launchpad Customizing",
+		"tags": ["UI5", "Fiori"],
+		"favorite": false
+	},
+	{
+		"tcode": "/IWFND/GW_CLIENT",
+		"description": "Gateway Client",
+		"tags": ["UI5", "Fiori", "OData"],
+		"favorite": false
+	}
+]

@@ -1,0 +1,35 @@
+name: Deploy to FTP
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Repository auschecken
+        uses: actions/checkout@v4
+
+      - name: Node.js einrichten
+        uses: actions/setup-node@v3
+        with:
+          node-version: 22
+
+      - name: Abhängigkeiten installieren
+        run: npm install
+
+      - name: Projekt builden
+        run: npm run build
+
+      - name: Dateien via FTP hochladen
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: tcodes.kerni.ch
+          username: ${{ secrets.FTP_USER }}
+          password: ${{ secrets.FTP_PASS }}
+          protocol: ftps
+          local-dir: ./dist/
+          server-dir: /

@@ -1,0 +1,21 @@
+{
+	"generator-ui5-ts-app": {
+		"namespace": "ch.kerni.tcode",
+		"framework": "OpenUI5",
+		"frameworkVersion": "1.133.0",
+		"author": "Mario Kernich",
+		"initrepo": true,
+		"tstypes": "@openui5/types",
+		"tstypesVersion": "1.133.0",
+		"appId": "ch.kerni.tcode",
+		"appURI": "ch/kerni/tcode",
+		"cdnDomain": "sdk.openui5.org",
+		"defaultTheme": "sap_horizon",
+		"gte1_98_0": true,
+		"gte1_104_0": true,
+		"gte1_115_0": true,
+		"gte1_120_0": true,
+		"lt1_124_0": false,
+		"setupCompleted": true
+	}
+}
