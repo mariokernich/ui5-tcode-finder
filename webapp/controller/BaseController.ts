@@ -8,7 +8,7 @@ import Router from "sap/ui/core/routing/Router";
 import History from "sap/ui/core/routing/History";
 
 /**
- * @namespace de.kernich.tcodes.controller
+ * @namespace de.kernich.tcode.controller
  */
 export default abstract class BaseController extends Controller {
 	/**

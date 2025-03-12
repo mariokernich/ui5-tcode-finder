@@ -1,11 +1,11 @@
 <mvc:View
-    controllerName="de.kernich.tcodes.controller.Main"
+    controllerName="de.kernich.tcode.controller.Main"
     displayBlock="true"
     xmlns="sap.m"
     xmlns:mvc="sap.ui.core.mvc"
     xmlns:core="sap.ui.core"
     core:require="{
-		formatter: 'de/kernich/tcodes/model/formatter'
+		formatter: 'de/kernich/tcode/model/formatter'
 	}"
 >
     <Page id="page">
@@ -28,7 +28,7 @@
                 <Button
                     icon="img/github-brands.svg"
                     text="View on GitHub"
-                    press="window.open('https://github.com/marioke/de.kernich.tcodes', '_blank')"
+                    press="window.open('https://github.com/marioke/de.kernich.tcode', '_blank')"
                     tooltip="GitHub Repository"
                 />
                 <Button

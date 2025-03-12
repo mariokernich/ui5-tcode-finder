@@ -3,7 +3,7 @@ import models from "./model/models";
 import Device from "sap/ui/Device";
 
 /**
- * @namespace de.kernich.tcodes
+ * @namespace de.kernich.tcode
  */
 export default class Component extends UIComponent {
 	public static metadata = {

@@ -7,7 +7,7 @@ export interface Transaction {
 }
 
 /**
- * @namespace de.kernich.tcodes.util
+ * @namespace de.kernich.tcode.util
  */
 export default class Database extends UI5Element {
 	private db: IDBDatabase | null = null;

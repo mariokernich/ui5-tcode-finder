@@ -27,7 +27,7 @@ jobs:
       - name: Dateien via FTP hochladen
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
-          server: tcodes.kerni.ch
+          server: tcodes.kernich.de
           username: ${{ secrets.FTP_USER }}
           password: ${{ secrets.FTP_PASS }}
           protocol: ftps

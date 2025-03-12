@@ -1,12 +1,12 @@
 # UI5/Fiori T-Code Quick Search
 
-![Build](https://github.com/marioke/de.kernich.tcodes/actions/workflows/build.yml/badge.svg)
-![Eslint](https://github.com/marioke/de.kernich.tcodes/actions/workflows/eslint.yml/badge.svg)
-![TypeScript](https://github.com/marioke/de.kernich.tcodes/actions/workflows/typescript.yml/badge.svg)
-![ui5lint](https://github.com/marioke/de.kernich.tcodes/actions/workflows/ui5lint.yml/badge.svg)
-![deploy](https://github.com/marioke/de.kernich.tcodes/actions/workflows/deploy.yml/badge.svg)
+![Build](https://github.com/marioke/de.kernich.tcode/actions/workflows/build.yml/badge.svg)
+![Eslint](https://github.com/marioke/de.kernich.tcode/actions/workflows/eslint.yml/badge.svg)
+![TypeScript](https://github.com/marioke/de.kernich.tcode/actions/workflows/typescript.yml/badge.svg)
+![ui5lint](https://github.com/marioke/de.kernich.tcode/actions/workflows/ui5lint.yml/badge.svg)
+![deploy](https://github.com/marioke/de.kernich.tcode/actions/workflows/deploy.yml/badge.svg)
 
-Welcome to the UI5/Fiori T-Code Quick Search project. This application provides a fast and efficient way to search for transaction codes (T-Codes) relevant to UI5 and Fiori development. A live demo is available at [tcode.kerni.ch](https://tcode.kerni.ch).
+Welcome to the UI5/Fiori T-Code Quick Search project. This application provides a fast and efficient way to search for transaction codes (T-Codes) relevant to UI5 and Fiori development. A live demo is available at [tcode.kernich.de](https://tcode.kernich.de).
 
 ![Screenshot](screenshot.png)
 

@@ -1,5 +1,5 @@
 <mvc:View
-    controllerName="de.kernich.tcodes.controller.App"
+    controllerName="de.kernich.tcode.controller.App"
     displayBlock="true"
     xmlns="sap.m"
     xmlns:mvc="sap.ui.core.mvc"

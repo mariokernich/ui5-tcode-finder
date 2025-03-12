@@ -1,7 +1,7 @@
 {
-	"name": "de.kernich.tcodes",
+	"name": "de.kernich.tcode",
 	"version": "1.0.0",
-	"description": "UI5 Application: de.kernich.tcodes",
+	"description": "UI5 Application: de.kernich.tcode",
 	"author": "Mario Kernich",
 	"license": "Apache-2.0",
 	"scripts": {
