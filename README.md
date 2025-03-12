@@ -25,7 +25,7 @@ This project demonstrates a TypeScript setup for developing UI5 applications. It
 - 
 ## Demo
 
-A live demo of the application can be accessed at [tcode.kernich.de](https://tcode.kernich.de).
+A live demo of the application can be accessed at [tcode.kerni.ch](https://tcode.kerni.ch).
 
 ## Requirements
 
