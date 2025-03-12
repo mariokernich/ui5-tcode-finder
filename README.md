@@ -22,7 +22,7 @@ This project demonstrates a TypeScript setup for developing UI5 applications. It
 - **Add Custom T-Codes**: Add your own T-Codes with descriptions.
 - **Delete T-Codes**: Delete selected T-Codes from the list.
 - **Reset to Factory Defaults**: Reset the T-Code list to the default set of T-Codes.
-- 
+  
 ## Demo
 
 A live demo of the application can be accessed at [tcode.kernich.de](https://tcode.kernich.de).
