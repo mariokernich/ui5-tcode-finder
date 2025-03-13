@@ -13,13 +13,13 @@
 	},
 	{
 		"tcode": "SE10",
-		"description": "Transport Organizer",
+		"description": "Transport Organizer - Create, View and release Workbench and Customing Transports",
 		"tags": ["ABAP", "Development"],
 		"favorite": false
 	},
 	{
 		"tcode": "/ui2/flp",
-		"description": "Open Fiori Launchpad",
+		"description": "Open Fiori Launchpad in Browser",
 		"tags": ["UI5", "Fiori"],
 		"favorite": false
 	},
@@ -43,55 +43,55 @@
 	},
 	{
 		"tcode": "SU01",
-		"description": "User Maintenance",
+		"description": "User Maintenance - Create, Copy, Delete, Lock, Unlock, Password reset",
 		"tags": ["UI5", "Fiori", "Security"],
 		"favorite": false
 	},
 	{
 		"tcode": "PFCG",
-		"description": "Role Maintenance",
+		"description": "Role Maintenance - Create, Copy, Delete, Assign, Unassign Fiori roles",
 		"tags": ["UI5", "Fiori", "Security"],
 		"favorite": false
 	},
 	{
 		"tcode": "ST22",
-		"description": "ABAP Dump Analysis",
+		"description": "ABAP Short Dump Analysis",
 		"tags": ["UI5", "Fiori", "ABAP"],
 		"favorite": false
 	},
 	{
 		"tcode": "/UI2/FLPD_CUST",
-		"description": "Fiori Launchpad Designer (Customization)",
+		"description": "Fiori Launchpad Designer - Client-specific Customization",
 		"tags": ["UI5", "Fiori"],
 		"favorite": false
 	},
 	{
 		"tcode": "/UI2/FLPD_CONF",
-		"description": "Fiori Launchpad Designer (Configuration)",
+		"description": "Fiori Launchpad Designer - Cross-client Configuration",
 		"tags": ["UI5", "Fiori"],
 		"favorite": false
 	},
 	{
 		"tcode": "/UI5/THEME_DESIGNER",
-		"description": "UI Theme Designer",
+		"description": "UI Theme Designer - Develop and maintain custom Themes",
 		"tags": ["UI5", "Fiori", "Theme"],
 		"favorite": false
 	},
 	{
 		"tcode": "/UI5/THEME_TOOL",
-		"description": "UI Theme Tool. Upload and Download Themes",
+		"description": "UI Theme Tool - Upload and download Themes",
 		"tags": ["UI5", "Fiori", "Theme"],
 		"favorite": false
 	},
 	{
 		"tcode": "/IWFND/MAINT_SERVICE",
-		"description": "Gateway Service Maintenance",
+		"description": "Gateway Service Maintenance - Create and maintain aliases for OData services",
 		"tags": ["UI5", "Fiori", "OData"],
 		"favorite": false
 	},
 	{
 		"tcode": "/IWFND/ERROR_LOG",
-		"description": "Gateway Error Log",
+		"description": "Gateway Error Log - Monitor and analyze errors from ODAta services",
 		"tags": ["UI5", "Fiori", "OData"],
 		"favorite": false
 	},
@@ -109,13 +109,13 @@
 	},
 	{
 		"tcode": "/IWFND/GW_CLIENT",
-		"description": "Gateway Client",
+		"description": "Gateway Client - Test OData services withouth UI5 or fetch metadata of service",
 		"tags": ["UI5", "Fiori", "OData"],
 		"favorite": false
 	},
 	{
 		"tcode": "/UI2/CACHE",
-		"description": "Register service for UI2 cache use",
+		"description": "Register service for UI5 cache use",
 		"tags": ["UI5", "Fiori"],
 		"favorite": false
 	},
@@ -123,6 +123,42 @@
 		"tcode": "/UI2/CACHE_DEL",
 		"description": "Delete cache entries",
 		"tags": ["UI5", "Fiori"],
+		"favorite": false
+	},
+	{
+		"tcode": "STC01",
+		"description": "Configuratin lists",
+		"tags": [],
+		"favorite": false
+	},
+	{
+		"tcode": "SE03",
+		"description": "Transport Organizer Tools (expert)",
+		"tags": [],
+		"favorite": false
+	},
+	{
+		"tcode": "SE38",
+		"description": "ABAP Editor or program execution like /UI5/UI5_REPOSITORY_LOAD",
+		"tags": [],
+		"favorite": false
+	},
+	{
+		"tcode": "SMICM",
+		"description": "ICM Monitor (server cache reset)",
+		"tags": [],
+		"favorite": false
+	},
+	{
+		"tcode": "SA38",
+		"description": "Recalculate index of UI5 resources",
+		"tags": [],
+		"favorite": false
+	},
+	{
+		"tcode": "SE91",
+		"description": "Message class maintenance or where-used determination",
+		"tags": [],
 		"favorite": false
 	}
 ]
