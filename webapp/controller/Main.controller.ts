@@ -452,6 +452,7 @@ export default class Main extends BaseController {
 					dialog.close();
 					dialog.destroy();
 					this.focusSearch();
+					MessageToast.show("Settings saved.");
 				},
 			}),
 			endButton: new Button({
