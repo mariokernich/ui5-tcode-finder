@@ -357,9 +357,9 @@ export default class Main extends BaseController {
 	}
 
 	public onOpenSettings(): void {
-		const copyWithPrefix = localStorage.getItem("copyWithPrefix") === "true";
+		const copyWithPrefix = localStorage.getItem("copyWithPrefix") !== "false";
 		const resetSearchAfterCopy =
-			localStorage.getItem("resetSearchAfterCopy") === "true";
+			localStorage.getItem("resetSearchAfterCopy") !== "false";
 		const currentTheme = localStorage.getItem("theme") || "System";
 		const checkBoxCopyPrefix = new CheckBox({
 			text: "Copy T-Codes with /n prefix",
