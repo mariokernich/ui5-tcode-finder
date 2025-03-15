@@ -162,6 +162,12 @@
 		"favorite": false
 	},
 	{
+		"tcode": "SE93",
+		"description": "Search, edit and create transaction codes",
+		"tags": [],
+		"favorite": false
+	},
+	{
 		"tcode": "/iwfnd/virus_scan",
 		"description": "Virus Scan profile configuration",
 		"tags": [],
