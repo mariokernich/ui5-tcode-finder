@@ -160,5 +160,11 @@
 		"description": "Message class maintenance or where-used determination",
 		"tags": [],
 		"favorite": false
+	},
+	{
+		"tcode": "/iwfnd/virus_scan",
+		"description": "Virus Scan profile configuration",
+		"tags": [],
+		"favorite": false
 	}
 ]
