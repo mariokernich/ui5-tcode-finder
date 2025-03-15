@@ -32,6 +32,13 @@ export default class Main extends BaseController {
 
 	private local = {
 		selectedTag: "ALL",
+		allCount: 0,
+		generalCount: 0,
+		ui5Count: 0,
+		abapCount: 0,
+		ewmCount: 0,
+		erpCount: 0,
+		customCount: 0,
 	};
 
 	public onInit() {
@@ -61,6 +68,7 @@ export default class Main extends BaseController {
 		const viewModel = new JSONModel(transactions);
 		this.getView().setModel(viewModel);
 
+		this.updateTabCounts(transactions);
 		this.sortTable();
 		this.updateDeleteButtonState();
 		this.focusSearch();
@@ -88,6 +96,7 @@ export default class Main extends BaseController {
 		const model = new JSONModel(transactions);
 		this.getView().setModel(model);
 
+		this.updateTabCounts(transactions);
 		this.filterTable();
 		this.sortTable();
 		this.updateDeleteButtonState();
@@ -200,7 +209,7 @@ export default class Main extends BaseController {
 	private sortTable() {
 		const table = this.byId("transactionTable") as Table;
 		const binding = table.getBinding("items") as ListBinding;
-		const sorters = [new Sorter("favorite", true), new Sorter("tcode", true)];
+		const sorters = [new Sorter("favorite", true), new Sorter("tcode", false)];
 		binding.sort(sorters);
 	}
 
@@ -463,5 +472,25 @@ export default class Main extends BaseController {
 		}
 
 		this.filterTable();
+	}
+
+	private updateTabCounts(transactions: Transaction[]): void {
+		const counts = {
+			allCount: transactions.length,
+			generalCount: transactions.filter((t) => t.tags.includes("GENERAL"))
+				.length,
+			ui5Count: transactions.filter((t) => t.tags.includes("UI5")).length,
+			abapCount: transactions.filter((t) => t.tags.includes("ABAP")).length,
+			ewmCount: transactions.filter((t) => t.tags.includes("EWM")).length,
+			erpCount: transactions.filter((t) => t.tags.includes("ERP")).length,
+			customCount: transactions.filter((t) => t.tags.includes("CUSTOM")).length,
+		};
+
+		this.local.allCount = counts.allCount;
+		this.local.generalCount = counts.generalCount;
+		this.local.ui5Count = counts.ui5Count;
+		this.local.abapCount = counts.abapCount;
+		this.local.ewmCount = counts.ewmCount;
+		this.local.erpCount = counts.erpCount;
 	}
 }

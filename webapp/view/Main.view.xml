@@ -59,37 +59,37 @@
                 <items>
                     <IconTabFilter
                         key="ALL"
-                        text="All"
+                        text="{= 'All (' + ${local>/allCount} + ')' }"
                         icon="sap-icon://multiselect-all"
                     />
                     <IconTabFilter
                         key="GENERAL"
-                        text="GENERAL"
+                        text="{= 'GENERAL (' + ${local>/generalCount} + ')' }"
                         icon="sap-icon://world"
                     />
                     <IconTabFilter
                         key="UI5"
-                        text="UI5/FIORI"
+                        text="{= 'UI5/FIORI (' + ${local>/ui5Count} + ')' }"
                         icon="sap-icon://sap-ui5"
                     />
                     <IconTabFilter
                         key="ABAP"
-                        text="ABAP"
+                        text="{= 'ABAP (' + ${local>/abapCount} + ')' }"
                         icon="sap-icon://program-triangles"
                     />
                     <IconTabFilter
                         key="EWM"
-                        text="SAP EWM"
+                        text="{= 'SAP EWM (' + ${local>/ewmCount} + ')' }"
                         icon="sap-icon://program-triangles"
                     />
                     <IconTabFilter
                         key="ERP"
-                        text="SAP ERP"
+                        text="{= 'SAP ERP (' + ${local>/erpCount} + ')' }"
                         icon="sap-icon://program-triangles"
                     />
                     <IconTabFilter
                         key="CUSTOM"
-                        text="CUSTOM"
+                        text="{= 'CUSTOM (' + ${local>/customCount} + ')' }"
                         icon="sap-icon://program-triangles"
                     />
                 </items>
@@ -115,7 +115,7 @@
                     <Column width="200px">
                         <Text text="Transaction code" />
                     </Column>
-                    <Column>
+                    <Column width="300px">
                         <Text text="Title" />
                     </Column>
                     <Column>

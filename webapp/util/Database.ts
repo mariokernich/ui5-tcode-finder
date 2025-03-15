@@ -16,7 +16,7 @@ export default class Database extends UI5Element {
 
 	public async open(): Promise<void> {
 		return new Promise((resolve, reject) => {
-			const request = indexedDB.open("TCodeDB", 1);
+			const request = indexedDB.open("TCodeDB_2", 1);
 
 			request.onupgradeneeded = (event: IDBVersionChangeEvent) => {
 				const db = (event.target as IDBOpenDBRequest).result;

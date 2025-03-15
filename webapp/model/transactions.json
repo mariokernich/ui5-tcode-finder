@@ -275,5 +275,107 @@
 		"title": "Display Material Master",
 		"description": "View detailed material master data",
 		"tags": "ERP"
+	},
+	{
+		"tcode": "/SCWM/GR",
+		"title": "Goods Receipt",
+		"description": "Post goods receipt for inbound deliveries in EWM",
+		"tags": "EWM"
+	},
+	{
+		"tcode": "/SCWM/GMC",
+		"title": "Goods Movement",
+		"description": "Perform stock transfers and inventory adjustments",
+		"tags": "EWM"
+	},
+	{
+		"tcode": "/SCWM/QUEUE",
+		"title": "Queue Management",
+		"description": "Monitor and manage warehouse queues",
+		"tags": "EWM"
+	},
+	{
+		"tcode": "/SCWM/TU",
+		"title": "Transportation Unit Management",
+		"description": "Manage and monitor transportation units in the warehouse",
+		"tags": "EWM"
+	},
+	{
+		"tcode": "/SCWM/RFDEBUG",
+		"title": "RF Debugging Tool",
+		"description": "Analyze and troubleshoot RF transactions",
+		"tags": "EWM"
+	},
+	{
+		"tcode": "/SCWM/ISU",
+		"title": "Internal Stock Transfer",
+		"description": "Initiate and manage internal warehouse stock transfers",
+		"tags": "EWM"
+	},
+	{
+		"tcode": "VA01",
+		"title": "Create Sales Order",
+		"description": "Create and manage customer sales orders",
+		"tags": "ERP"
+	},
+	{
+		"tcode": "VA02",
+		"title": "Change Sales Order",
+		"description": "Modify existing sales orders",
+		"tags": "ERP"
+	},
+	{
+		"tcode": "VF01",
+		"title": "Create Billing Document",
+		"description": "Generate invoices and billing documents",
+		"tags": "ERP"
+	},
+	{
+		"tcode": "MB51",
+		"title": "Material Document List",
+		"description": "Display material document history",
+		"tags": "ERP"
+	},
+	{
+		"tcode": "MMSC",
+		"title": "Extend Storage Location",
+		"description": "Extend material master to additional storage locations",
+		"tags": "ERP"
+	},
+	{
+		"tcode": "LS24",
+		"title": "Display Warehouse Stock",
+		"description": "View stock quantities per storage bin",
+		"tags": "ERP"
+	},
+	{
+		"tcode": "LX02",
+		"title": "Stock Overview in Warehouse",
+		"description": "Display detailed warehouse stock overview",
+		"tags": "ERP"
+	},
+	{
+		"tcode": "IQ09",
+		"title": "List Equipment",
+		"description": "Search and list equipment master data",
+		"tags": "ERP"
+	},
+	{
+		"tcode": "IE03",
+		"title": "Display Equipment",
+		"description": "View technical details of equipment",
+		"tags": "ERP"
+	},
+	{
+		"tcode": "IW32",
+		"title": "Change Maintenance Order",
+		"description": "Modify and update maintenance orders",
+		"tags": "ERP"
+	},
+	{
+		"tcode": "IW38",
+		"title": "List Maintenance Orders",
+		"description": "Search and display maintenance orders",
+		"tags": "ERP"
 	}
 ]
