@@ -121,7 +121,9 @@ export default class Main extends BaseController {
 	}
 
 	private async handleCopy(tcode: string) {
-		await Util.copy2Clipboard(tcode);
+		const prefix =
+			localStorage.getItem("copyWithPrefix") === "true" ? "/n" : "";
+		await Util.copy2Clipboard(prefix + tcode);
 		MessageToast.show(`Transaction ${tcode} copied.`);
 		this.focusSearch();
 	}
@@ -296,11 +298,18 @@ export default class Main extends BaseController {
 	}
 
 	public onOpenSettings(): void {
+		const copyWithPrefix = localStorage.getItem("copyWithPrefix") === "true";
+		const checkBox = new CheckBox({
+			text: "Copy T-Codes with /n prefix",
+			selected: copyWithPrefix,
+		});
+
 		const dialog = new Dialog({
 			title: "Settings",
 			content: [
 				new VBox({
 					items: [
+						checkBox,
 						new Button({
 							text: "Reset factory defaults",
 							type: "Reject",
@@ -310,6 +319,17 @@ export default class Main extends BaseController {
 				}).addStyleClass("sapUiSmallMargin"),
 			],
 			beginButton: new Button({
+				text: "Save",
+				press: () => {
+					localStorage.setItem(
+						"copyWithPrefix",
+						checkBox.getSelected().toString()
+					);
+					dialog.close();
+					dialog.destroy();
+				},
+			}),
+			endButton: new Button({
 				text: "Close",
 				press: () => {
 					dialog.close();
