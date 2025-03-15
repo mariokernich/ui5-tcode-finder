@@ -371,6 +371,7 @@ export default class Main extends BaseController {
 					);
 					dialog.close();
 					dialog.destroy();
+					this.focusSearch();
 				},
 			}),
 			endButton: new Button({
@@ -378,6 +379,7 @@ export default class Main extends BaseController {
 				press: () => {
 					dialog.close();
 					dialog.destroy();
+					this.focusSearch();
 				},
 			}),
 			draggable: true,

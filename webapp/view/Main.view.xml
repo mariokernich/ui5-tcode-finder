@@ -70,7 +70,7 @@
                     <IconTabFilter
                         key="UI5"
                         text="{= 'UI5/FIORI (' + ${local>/ui5Count} + ')' }"
-                        icon="sap-icon://sap-ui5"
+                        icon="sap-icon://popup-window"
                     />
                     <IconTabFilter
                         key="ABAP"
