@@ -43,6 +43,7 @@ export default class Main extends BaseController {
 		ewmCount: 0,
 		erpCount: 0,
 		customCount: 0,
+		busy: false,
 	};
 
 	public onInit() {
@@ -60,24 +61,7 @@ export default class Main extends BaseController {
 		this.standardTransactions = model.getData() as Transaction[];
 
 		await this.db.open();
-		const customTransactions = await this.db.getTransactions();
-		const favoriteTransactions = await this.db.getFavoriteTransactions();
-		const transactions = [...this.standardTransactions, ...customTransactions];
-
-		// Merge favorite status
-		transactions.forEach((transaction) => {
-			transaction.favorite = favoriteTransactions.some(
-				(fav) => fav.tcode === transaction.tcode
-			);
-		});
-
-		const viewModel = new JSONModel(transactions);
-		this.getView().setModel(viewModel);
-
-		this.updateTabCounts(transactions);
-		this.sortTable();
-		this.updateDeleteButtonState();
-		this.focusSearch();
+		await this.refresh();
 	}
 
 	private setDefaultSettings() {
@@ -108,24 +92,33 @@ export default class Main extends BaseController {
 	}
 
 	private async refresh(): Promise<void> {
-		const customTransactions = await this.db.getTransactions();
-		const transactions = [...this.standardTransactions, ...customTransactions];
-		const favoriteTransactions = await this.db.getFavoriteTransactions();
+		this.local.busy = true;
+		try {
+			const customTransactions = await this.db.getTransactions();
+			const transactions = [
+				...this.standardTransactions,
+				...customTransactions,
+			];
+			const favoriteTransactions = await this.db.getFavoriteTransactions();
 
-		transactions.forEach((transaction) => {
-			transaction.favorite = favoriteTransactions.some(
-				(fav) => fav.tcode === transaction.tcode
-			);
-		});
+			transactions.forEach((transaction) => {
+				transaction.favorite = favoriteTransactions.some(
+					(fav) => fav.tcode === transaction.tcode
+				);
+			});
 
-		const model = new JSONModel(transactions);
-		this.getView().setModel(model);
+			const model = new JSONModel(transactions);
+			this.getView().setModel(model);
 
-		this.updateTabCounts(transactions);
-		this.filterTable();
-		this.sortTable();
-		this.updateDeleteButtonState();
-		this.focusSearch();
+			this.updateTabCounts(transactions);
+			this.filterTable();
+			this.sortTable();
+			this.updateDeleteButtonState();
+			this.updateTabCounts(transactions);
+			this.focusSearch();
+		} finally {
+			this.local.busy = false;
+		}
 	}
 
 	private focusSearch() {
@@ -258,11 +251,18 @@ export default class Main extends BaseController {
 	}
 
 	public onAddTransaction(): void {
-		const inputCode = new Input({ width: "100%" }).addStyleClass(
-			"sapUiSmallMarginBottom"
-		);
-		const inputTitle = new Input("titleInput", { width: "100%" });
-		const inputDescription = new Input("descriptionInput", { width: "100%" });
+		const inputCode = new Input({
+			width: "100%",
+			placeholder: "Enter transaction...",
+		}).addStyleClass("sapUiSmallMarginBottom");
+		const inputTitle = new Input("titleInput", {
+			width: "100%",
+			placeholder: "Enter title...",
+		}).addStyleClass("sapUiSmallMarginBottom");
+		const inputDescription = new Input("descriptionInput", {
+			width: "100%",
+			placeholder: "Enter description...",
+		});
 		const dialog = new Dialog({
 			title: "Add Transaction",
 			content: [
@@ -300,11 +300,11 @@ export default class Main extends BaseController {
 					dialog.destroy();
 				},
 			}),
-			draggable: true,
 		});
 
 		this.getView().addDependent(dialog);
 		dialog.open();
+		inputCode.focus();
 	}
 
 	private async handleAddTransaction(

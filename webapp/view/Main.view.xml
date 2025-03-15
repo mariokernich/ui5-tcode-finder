@@ -11,6 +11,8 @@
     <Page
         id="page"
         showFooter="{= ${local>/selectedTag} === 'CUSTOM' }"
+        busy="{local>/busy}"
+        busyIndicatorDelay="0"
     >
         <customHeader>
             <OverflowToolbar>
@@ -100,6 +102,7 @@
                 mode="None"
                 selectionChange=".onSelectionChange"
                 itemPress=".onRowPress"
+                noDataText="No transactions found"
             >
                 <contextMenu>
                     <Menu>
