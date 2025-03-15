@@ -38,14 +38,14 @@
                 <Button
                     icon="img/github-brands.svg"
                     text="View on GitHub"
-                    press="window.open('https://github.com/marioke/de.kernich.tcode', '_blank')"
+                    press=".onOpenGitHub"
                     tooltip="GitHub Repository"
                 />
                 <Button
                     icon="img/linkedin-brands.svg"
                     text="Mario Kernich"
-                    press="window.open('https://www.linkedin.com/in/mario-kernich/', '_blank')"
-                    tooltip="GitHub Repository"
+                    press=".onOpenLinkedIn"
+                    tooltip="LinkedIn Profile"
                 />
             </OverflowToolbar>
         </customHeader>

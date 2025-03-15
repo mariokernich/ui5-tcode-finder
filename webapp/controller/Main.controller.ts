@@ -115,16 +115,23 @@ export default class Main extends BaseController {
 		});
 
 		const dialog = new Dialog({
-			title: "Welcome to UI5/Fiori T-Code Quick Search! 🎉",
+			title: "Welcome to T-Code Quick Finder! 🎉",
 			contentWidth: "500px",
 			content: new VBox({
 				items: [
 					new FormattedText({
 						htmlText: `
-							<p>This tool helps you quickly find and manage transaction codes (T-Codes) relevant to UI5 and Fiori development. You can search, copy, and favorite T-Codes for easy access. Enjoy your development journey! 🌟</p>
-							<p>Simply <strong>click</strong> on a T-Code <strong>to copy</strong> it to your clipboard. You can also <strong>add your own T-Codes</strong>, delete them, or reset to factory defaults.</p>
-							<p>To edit a T-Code, just right click any cell item.</p>
-							<p>If you have any feedback or feature requests, feel free to open an <a href="https://github.com/marioke/de.kernich.tcode/issues" target="_blank">issue on GitHub</a> 🚀</p>
+							<p>Welcome to <strong>T-Code Quick Finder</strong>, your ultimate tool for managing SAP T-Codes efficiently. This application is designed to help you quickly find, copy, and manage transaction codes (T-Codes).</p>
+							<p>Here are some key features:</p>
+							<ul>
+								<li><strong>Search:</strong> Use the search bar to find T-Codes by code, title, or description.</li>
+								<li><strong>Copy:</strong> Click on a T-Code to copy it to your clipboard. You can also choose to copy with a /n prefix.</li>
+								<li><strong>Favorites:</strong> Mark T-Codes as favorites for quick access.</li>
+								<li><strong>Custom T-Codes:</strong> Add, edit, and delete your own custom T-Codes.</li>
+								<li><strong>Settings:</strong> Customize your experience with options like theme selection and search reset behavior.</li>
+							</ul>
+							<p>To edit a T-Code, right-click on any cell item. If you have any feedback or feature requests, feel free to open an <a href="https://github.com/marioke/de.kernich.tcode/issues" target="_blank">issue on GitHub</a> 🚀</p>
+							<p>Enjoy your development journey! 🌟</p>
 						`,
 					}).addStyleClass("sapUiSmallMarginBegin sapUiSmallMarginEnd"),
 					checkBox,
@@ -564,5 +571,13 @@ export default class Main extends BaseController {
 		this.local.ewmCount = counts.ewmCount;
 		this.local.erpCount = counts.erpCount;
 		this.local.customCount = counts.customCount;
+	}
+
+	onOpenGitHub() {
+		window.open("https://github.com/marioke/de.kernich.tcode", "_blank");
+	}
+
+	onOpenLinkedIn() {
+		window.open("https://www.linkedin.com/in/mario-kernich/", "_blank");
 	}
 }

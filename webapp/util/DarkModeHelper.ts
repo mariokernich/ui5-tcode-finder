@@ -1,5 +1,4 @@
 import ManagedObject from "sap/ui/base/ManagedObject";
-import Core from "sap/ui/core/Core";
 import Theming from "sap/ui/core/Theming";
 
 /**
@@ -31,13 +30,13 @@ export default class DarkModeHelper extends ManagedObject {
 	public static toDark() {
 		const themeRootId = DarkModeHelper.getRootThemeName();
 
-		Core.applyTheme(`${themeRootId}_dark`);
+		Theming.setTheme(`${themeRootId}_dark`);
 	}
 
 	public static toLight() {
 		const themeRootId = DarkModeHelper.getRootThemeName();
 
-		Core.applyTheme(themeRootId);
+		Theming.setTheme(themeRootId);
 	}
 
 	public static getRootThemeName(): string {
