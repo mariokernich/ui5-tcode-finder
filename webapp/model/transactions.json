@@ -377,5 +377,23 @@
 		"title": "List Maintenance Orders",
 		"description": "Search and display maintenance orders",
 		"tags": "ERP"
+	},
+	{
+		"tcode": "SLG1",
+		"title": "Application Log",
+		"description": "Display and manage application logs",
+		"tags": "GENERAL,ABAP,UI5"
+	},
+	{
+		"tcode": "SM37",
+		"title": "Job Monitoring",
+		"description": "Monitor and manage background jobs",
+		"tags": "GENERAL"
+	},
+	{
+		"tcode": "SLGD",
+		"title": "Application Log (extended)",
+		"description": "View detailed application log entries",
+		"tags": "GENERAL,ABAP,UI5"
 	}
 ]
