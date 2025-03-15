@@ -57,6 +57,7 @@
                 applyContentPadding="false"
                 headerMode="Inline"
                 selectedKey="{local>/selectedTag}"
+                upperCase="true"
             >
                 <items>
                     <IconTabFilter
