@@ -13,13 +13,17 @@ import CheckBox from "sap/m/CheckBox";
 import FormattedText from "sap/m/FormattedText";
 import { MenuItem$PressEvent } from "sap/m/MenuItem";
 import { Button$PressEvent } from "sap/m/Button";
-import { SearchField$LiveChangeEvent } from "sap/m/SearchField";
+import SearchField, { SearchField$LiveChangeEvent } from "sap/m/SearchField";
 import Table from "sap/m/Table";
 import ListBinding from "sap/ui/model/ListBinding";
 import Util from "../util/Util";
 import Database, { Transaction } from "../util/Database";
 import VBox from "sap/m/VBox";
 import { IconTabBar$SelectEvent } from "sap/m/IconTabBar";
+import DarkModeHelper from "../util/DarkModeHelper";
+import Select from "sap/m/Select";
+import Item from "sap/ui/core/Item";
+import HBox from "sap/m/HBox";
 
 type Action = keyof MessageBox["Action"];
 
@@ -72,14 +76,6 @@ export default class Main extends BaseController {
 		this.sortTable();
 		this.updateDeleteButtonState();
 		this.focusSearch();
-	}
-
-	private async handleResetFactory() {
-		const model = new JSONModel();
-		await model.loadData("model/transactions.json");
-		const data = model.getData() as Transaction[];
-		await this.db.resetFactoryDefaults(data);
-		await this.refresh();
 	}
 
 	private async refresh(): Promise<void> {
@@ -164,7 +160,19 @@ export default class Main extends BaseController {
 			localStorage.getItem("copyWithPrefix") === "true" ? "/n" : "";
 		await Util.copy2Clipboard(prefix + tcode);
 		MessageToast.show(`Transaction ${tcode} copied.`);
+		if (localStorage.getItem("resetSearchAfterCopy") === "true") {
+			this.resetSearch();
+		}
 		this.focusSearch();
+	}
+
+	private resetSearch() {
+		const searchField = this.getView().byId("IdSearchField") as SearchField;
+		searchField.setValue("");
+		const table = this.byId("transactionTable") as Table;
+		const binding = table.getBinding("items") as ListBinding;
+		binding.filter([]);
+		this.local.selectedTag = "ALL";
 	}
 
 	public onSearch(event: SearchField$LiveChangeEvent): void {
@@ -350,25 +358,61 @@ export default class Main extends BaseController {
 
 	public onOpenSettings(): void {
 		const copyWithPrefix = localStorage.getItem("copyWithPrefix") === "true";
-		const checkBox = new CheckBox({
+		const resetSearchAfterCopy =
+			localStorage.getItem("resetSearchAfterCopy") === "true";
+		const currentTheme = localStorage.getItem("theme") || "System";
+		const checkBoxCopyPrefix = new CheckBox({
 			text: "Copy T-Codes with /n prefix",
 			selected: copyWithPrefix,
+		});
+		const checkBoxResetSearch = new CheckBox({
+			text: "Reset search after copy",
+			selected: resetSearchAfterCopy,
+		}).addStyleClass("sapUiSmallMarginBottom");
+		const themeSelect = new Select({
+			selectedKey: currentTheme,
+			items: [
+				new Item({ key: "Light", text: "Light" }),
+				new Item({ key: "Dark", text: "Dark" }),
+				new Item({ key: "System", text: "System" }),
+			],
 		});
 
 		const dialog = new Dialog({
 			title: "Settings",
 			content: [
 				new VBox({
-					items: [checkBox],
+					items: [
+						checkBoxCopyPrefix,
+						checkBoxResetSearch,
+						new HBox({
+							items: [
+								new Label({ text: "Design:" }).addStyleClass(
+									"sapUiTinyMarginEnd"
+								),
+								themeSelect,
+							],
+							alignItems: "Center",
+							alignContent: "Center",
+						}).addStyleClass("sapUiTinyMarginBegin"),
+					],
 				}).addStyleClass("sapUiSmallMargin"),
 			],
 			beginButton: new Button({
 				text: "Save",
+				icon: "sap-icon://save",
 				press: () => {
 					localStorage.setItem(
 						"copyWithPrefix",
-						checkBox.getSelected().toString()
+						checkBoxCopyPrefix.getSelected().toString()
 					);
+					localStorage.setItem(
+						"resetSearchAfterCopy",
+						checkBoxResetSearch.getSelected().toString()
+					);
+					const selectedTheme = themeSelect.getSelectedKey();
+					localStorage.setItem("theme", selectedTheme);
+					this.applyTheme(selectedTheme);
 					dialog.close();
 					dialog.destroy();
 					this.focusSearch();
@@ -376,6 +420,7 @@ export default class Main extends BaseController {
 			}),
 			endButton: new Button({
 				text: "Close",
+				icon: "sap-icon://decline",
 				press: () => {
 					dialog.close();
 					dialog.destroy();
@@ -387,6 +432,29 @@ export default class Main extends BaseController {
 
 		this.getView().addDependent(dialog);
 		dialog.open();
+	}
+
+	private applyTheme(theme: string): void {
+		switch (theme) {
+			case "Light":
+				DarkModeHelper.toLight();
+				break;
+			case "Dark":
+				DarkModeHelper.toDark();
+				break;
+			case "System":
+			default: {
+				const prefersDarkScheme = window.matchMedia(
+					"(prefers-color-scheme: dark)"
+				).matches;
+				if (prefersDarkScheme) {
+					DarkModeHelper.toDark();
+				} else {
+					DarkModeHelper.toLight();
+				}
+				break;
+			}
+		}
 	}
 
 	private handleEditTransaction(
@@ -495,5 +563,6 @@ export default class Main extends BaseController {
 		this.local.abapCount = counts.abapCount;
 		this.local.ewmCount = counts.ewmCount;
 		this.local.erpCount = counts.erpCount;
+		this.local.customCount = counts.customCount;
 	}
 }
