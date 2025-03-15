@@ -472,6 +472,7 @@ export default class Main extends BaseController {
 		}
 
 		this.filterTable();
+		this.focusSearch();
 	}
 
 	private updateTabCounts(transactions: Transaction[]): void {
