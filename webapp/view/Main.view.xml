@@ -8,14 +8,17 @@
 		formatter: 'de/kernich/tcode/model/formatter'
 	}"
 >
-    <Page id="page">
+    <Page
+        id="page"
+        showFooter="{= ${local>/selectedTag} === 'CUSTOM' }"
+    >
         <customHeader>
             <OverflowToolbar>
                 <core:Icon
                     src="sap-icon://sap-ui5"
                     size="3rem"
                 />
-                <Title text="UI5/Fiori T-Code search" />
+                <Title text="SAP T-Code search" />
                 <ToolbarSpacer />
                 <SearchField
                     placeholder="Search for transaction..."
@@ -24,7 +27,14 @@
                     id="IdSearchField"
                 />
                 <ToolbarSpacer />
-
+                <Button
+                    icon="sap-icon://action-settings"
+                    press=".onOpenSettings"
+                    tooltip="Open settings"
+                    text="Settings"
+                    type="Transparent"
+                />
+                <ToolbarSeparator />
                 <Button
                     icon="img/github-brands.svg"
                     text="View on GitHub"
@@ -39,15 +49,55 @@
                 />
             </OverflowToolbar>
         </customHeader>
-        <VBox
-            justifyContent="Start"
-            alignItems="Center"
-            alignContent="Center"
-        >
+        <VBox>
+            <IconTabBar
+                select=".onIconTabBarSelect"
+                applyContentPadding="false"
+                headerMode="Inline"
+                selectedKey="{local>/selectedTag}"
+            >
+                <items>
+                    <IconTabFilter
+                        key="ALL"
+                        text="All"
+                        icon="sap-icon://multiselect-all"
+                    />
+                    <IconTabFilter
+                        key="GENERAL"
+                        text="GENERAL"
+                        icon="sap-icon://world"
+                    />
+                    <IconTabFilter
+                        key="UI5"
+                        text="UI5/FIORI"
+                        icon="sap-icon://sap-ui5"
+                    />
+                    <IconTabFilter
+                        key="ABAP"
+                        text="ABAP"
+                        icon="sap-icon://program-triangles"
+                    />
+                    <IconTabFilter
+                        key="EWM"
+                        text="SAP EWM"
+                        icon="sap-icon://program-triangles"
+                    />
+                    <IconTabFilter
+                        key="ERP"
+                        text="SAP ERP"
+                        icon="sap-icon://program-triangles"
+                    />
+                    <IconTabFilter
+                        key="CUSTOM"
+                        text="CUSTOM"
+                        icon="sap-icon://program-triangles"
+                    />
+                </items>
+            </IconTabBar>
             <Table
                 id="transactionTable"
                 items="{ path: '/' }"
-                mode="MultiSelect"
+                mode="None"
                 selectionChange=".onSelectionChange"
                 itemPress=".onRowPress"
             >
@@ -57,12 +107,16 @@
                             text="Edit"
                             icon="sap-icon://edit"
                             press=".onEditTransaction"
+                            visible="{= ${tags}.indexOf('CUSTOM') !== -1 }"
                         />
                     </Menu>
                 </contextMenu>
                 <columns>
                     <Column width="200px">
                         <Text text="Transaction code" />
+                    </Column>
+                    <Column>
+                        <Text text="Title" />
                     </Column>
                     <Column>
                         <Text text="Description" />
@@ -76,6 +130,7 @@
                     >
                         <cells>
                             <Text text="{= ${tcode}.toUpperCase() }" />
+                            <Text text="{ path: 'title' }" />
                             <Text text="{ path: 'description' }" />
                             <HBox justifyContent="End">
                                 <Button
@@ -100,20 +155,11 @@
                     type="Reject"
                     enabled="false"
                 />
-                <ToolbarSpacer />
                 <Button
                     icon="sap-icon://add-document"
                     press=".onAddTransaction"
                     tooltip="Add new transaction"
                     text="New"
-                    type="Ghost"
-                />
-
-                <Button
-                    icon="sap-icon://action-settings"
-                    press=".onOpenSettings"
-                    tooltip="Open settings"
-                    text="Settings"
                     type="Ghost"
                 />
             </OverflowToolbar>

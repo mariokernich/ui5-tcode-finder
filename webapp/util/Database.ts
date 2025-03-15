@@ -2,8 +2,10 @@ import UI5Element from "sap/ui/core/Element";
 
 export interface Transaction {
 	tcode: string;
+	title: string;
 	description: string;
-	favorite: boolean;
+	tags: string;
+	favorite?: boolean;
 }
 
 /**
@@ -24,6 +26,12 @@ export default class Database extends UI5Element {
 				store.createIndex("tcode", "tcode", { unique: true });
 				store.createIndex("description", "description", { unique: false });
 				store.createIndex("favorite", "favorite", { unique: false });
+
+				// Create a new object store for favorites
+				const favoriteStore = db.createObjectStore("favorites", {
+					keyPath: "tcode",
+				});
+				favoriteStore.createIndex("tcode", "tcode", { unique: true });
 			};
 
 			request.onsuccess = (event: Event) => {
@@ -68,7 +76,7 @@ export default class Database extends UI5Element {
 		});
 	}
 
-	public async updateFavorite(tcode: string, favorite: boolean): Promise<void> {
+	public async updateFavorite(tcode: string): Promise<void> {
 		return new Promise((resolve, reject) => {
 			const transactionRequest = this.db.transaction(
 				"transactions",
@@ -79,7 +87,6 @@ export default class Database extends UI5Element {
 
 			request.onsuccess = (event: Event) => {
 				const transaction = (event.target as IDBRequest).result as Transaction;
-				transaction.favorite = favorite;
 				const updateRequest = store.put(transaction);
 				updateRequest.onsuccess = () => resolve();
 				updateRequest.onerror = (event: Event) =>
@@ -91,8 +98,9 @@ export default class Database extends UI5Element {
 		});
 	}
 
-	public async updateTransactionDescription(
+	public async updateTransaction(
 		tcode: string,
+		title: string,
 		description: string
 	): Promise<void> {
 		return new Promise((resolve, reject) => {
@@ -105,6 +113,7 @@ export default class Database extends UI5Element {
 
 			request.onsuccess = (event: Event) => {
 				const transaction = (event.target as IDBRequest).result as Transaction;
+				transaction.title = title;
 				transaction.description = description;
 				const updateRequest = store.put(transaction);
 				updateRequest.onsuccess = () => resolve();
@@ -147,6 +156,43 @@ export default class Database extends UI5Element {
 
 			transactionRequest.oncomplete = () => resolve();
 			transactionRequest.onerror = (event: Event) =>
+				reject((event.target as IDBRequest).error);
+		});
+	}
+
+	public async addFavorite(tcode: string): Promise<void> {
+		return new Promise((resolve, reject) => {
+			const transactionRequest = this.db.transaction("favorites", "readwrite");
+			const store = transactionRequest.objectStore("favorites");
+			const request = store.add({ tcode });
+
+			request.onsuccess = () => resolve();
+			request.onerror = (event: Event) =>
+				reject((event.target as IDBRequest).error);
+		});
+	}
+
+	public async removeFavorite(tcode: string): Promise<void> {
+		return new Promise((resolve, reject) => {
+			const transactionRequest = this.db.transaction("favorites", "readwrite");
+			const store = transactionRequest.objectStore("favorites");
+			const request = store.delete(tcode);
+
+			request.onsuccess = () => resolve();
+			request.onerror = (event: Event) =>
+				reject((event.target as IDBRequest).error);
+		});
+	}
+
+	public async getFavoriteTransactions(): Promise<Transaction[]> {
+		return new Promise((resolve, reject) => {
+			const transactionRequest = this.db.transaction("favorites", "readonly");
+			const store = transactionRequest.objectStore("favorites");
+			const request = store.getAll();
+
+			request.onsuccess = (event: Event) =>
+				resolve((event.target as IDBRequest).result as Transaction[]);
+			request.onerror = (event: Event) =>
 				reject((event.target as IDBRequest).error);
 		});
 	}

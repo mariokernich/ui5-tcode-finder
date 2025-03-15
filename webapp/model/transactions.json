@@ -1,176 +1,279 @@
 [
 	{
 		"tcode": "SE80",
-		"description": "Object Navigator",
-		"tags": ["ABAP", "Development"],
-		"favorite": false
+		"title": "Object Navigator",
+		"description": "Manage classes, interfaces, programs, and ABAP Push Channels",
+		"tags": "ABAP"
 	},
 	{
 		"tcode": "SE11",
-		"description": "Data Dictionary",
-		"tags": ["ABAP", "Development"],
-		"favorite": false
+		"title": "Data Dictionary",
+		"description": "Define and manage database objects",
+		"tags": "ABAP"
 	},
 	{
 		"tcode": "SE10",
-		"description": "Transport Organizer - Create, View and release Workbench and Customing Transports",
-		"tags": ["ABAP", "Development"],
-		"favorite": false
+		"title": "Transport Organizer",
+		"description": "Create, manage, and release Workbench and Customizing transports",
+		"tags": "ABAP,UI5"
 	},
 	{
 		"tcode": "/ui2/flp",
-		"description": "Open Fiori Launchpad in Browser",
-		"tags": ["UI5", "Fiori"],
-		"favorite": false
+		"title": "SAP Fiori Launchpad",
+		"description": "Open the SAP Fiori Launchpad in a web browser",
+		"tags": "UI5"
 	},
 	{
 		"tcode": "/IWBEP/V4_ADMIN",
-		"description": "ODataV4 Service administration",
-		"tags": ["UI5", "OData"],
-		"favorite": false
+		"title": "OData V4 Service Administration",
+		"description": "Manage OData V4 services",
+		"tags": "UI5"
 	},
 	{
 		"tcode": "SEGW",
-		"description": "ODataV2 Service Builder",
-		"tags": ["UI5", "Fiori", "ABAP", "OData"],
-		"favorite": false
+		"title": "OData V2 Service Builder",
+		"description": "Develop and maintain OData services",
+		"tags": "UI5"
 	},
 	{
 		"tcode": "SICF",
-		"description": "HTTP Service Hierarchy Maintenance",
-		"tags": ["UI5", "Fiori", "ABAP"],
-		"favorite": false
+		"title": "HTTP Service Maintenance",
+		"description": "Activate and manage web services",
+		"tags": "UI5"
 	},
 	{
 		"tcode": "SU01",
-		"description": "User Maintenance - Create, Copy, Delete, Lock, Unlock, Password reset",
-		"tags": ["UI5", "Fiori", "Security"],
-		"favorite": false
+		"title": "User Maintenance",
+		"description": "Create, modify, lock/unlock, and reset user passwords",
+		"tags": "UI5,GENERAL"
 	},
 	{
 		"tcode": "PFCG",
-		"description": "Role Maintenance - Create, Copy, Delete, Assign, Unassign Fiori roles",
-		"tags": ["UI5", "Fiori", "Security"],
-		"favorite": false
+		"title": "Role Maintenance",
+		"description": "Create, assign, and manage Fiori roles",
+		"tags": "UI5"
 	},
 	{
 		"tcode": "ST22",
-		"description": "ABAP Short Dump Analysis",
-		"tags": ["UI5", "Fiori", "ABAP"],
-		"favorite": false
+		"title": "ABAP Runtime Error Analysis",
+		"description": "Analyze and troubleshoot short dumps",
+		"tags": "UI5,ABAP"
 	},
 	{
 		"tcode": "/UI2/FLPD_CUST",
-		"description": "Fiori Launchpad Designer - Client-specific Customization",
-		"tags": ["UI5", "Fiori"],
-		"favorite": false
+		"title": "Fiori Launchpad Designer",
+		"description": "Client-specific customization of tiles and catalogs",
+		"tags": "UI5"
 	},
 	{
 		"tcode": "/UI2/FLPD_CONF",
-		"description": "Fiori Launchpad Designer - Cross-client Configuration",
-		"tags": ["UI5", "Fiori"],
-		"favorite": false
+		"title": "Fiori Launchpad Designer",
+		"description": "Cross-client configuration of tiles and catalogs",
+		"tags": "UI5"
 	},
 	{
 		"tcode": "/UI5/THEME_DESIGNER",
-		"description": "UI Theme Designer - Develop and maintain custom Themes",
-		"tags": ["UI5", "Fiori", "Theme"],
-		"favorite": false
+		"title": "UI Theme Designer",
+		"description": "Develop and customize UI5 themes",
+		"tags": "UI5"
 	},
 	{
 		"tcode": "/UI5/THEME_TOOL",
-		"description": "UI Theme Tool - Upload and download Themes",
-		"tags": ["UI5", "Fiori", "Theme"],
-		"favorite": false
+		"title": "UI Theme Tool",
+		"description": "Upload and manage UI5 themes",
+		"tags": "UI5"
 	},
 	{
 		"tcode": "/IWFND/MAINT_SERVICE",
-		"description": "Gateway Service Maintenance - Create and maintain aliases for OData services",
-		"tags": ["UI5", "Fiori", "OData"],
-		"favorite": false
+		"title": "SAP Gateway Service Maintenance",
+		"description": "Manage and activate OData services",
+		"tags": "UI5"
 	},
 	{
 		"tcode": "/IWFND/ERROR_LOG",
-		"description": "Gateway Error Log - Monitor and analyze errors from ODAta services",
-		"tags": ["UI5", "Fiori", "OData"],
-		"favorite": false
+		"title": "SAP Gateway Error Log",
+		"description": "Monitor and analyze OData service errors",
+		"tags": "UI5"
 	},
 	{
 		"tcode": "/UI2/SEMOBJ",
-		"description": "Semantic Object Maintenance",
-		"tags": ["UI5", "Fiori"],
-		"favorite": false
+		"title": "Semantic Object Maintenance",
+		"description": "Define and manage semantic objects for navigation",
+		"tags": "UI5"
 	},
 	{
 		"tcode": "/UI2/FLP_CUS_CONF",
-		"description": "Fiori Launchpad Customizing",
-		"tags": ["UI5", "Fiori"],
-		"favorite": false
+		"title": "Fiori Launchpad Customization",
+		"description": "Configure and personalize FLP settings",
+		"tags": "UI5"
 	},
 	{
 		"tcode": "/IWFND/GW_CLIENT",
-		"description": "Gateway Client - Test OData services withouth UI5 or fetch metadata of service",
-		"tags": ["UI5", "Fiori", "OData"],
-		"favorite": false
+		"title": "SAP Gateway Client",
+		"description": "Test OData services and retrieve metadata",
+		"tags": "UI5"
 	},
 	{
 		"tcode": "/UI2/CACHE",
-		"description": "Register service for UI5 cache use",
-		"tags": ["UI5", "Fiori"],
-		"favorite": false
+		"title": "UI5 Cache Registration",
+		"description": "Register UI5 services for caching",
+		"tags": "UI5"
 	},
 	{
 		"tcode": "/UI2/CACHE_DEL",
-		"description": "Delete cache entries",
-		"tags": ["UI5", "Fiori"],
-		"favorite": false
+		"title": "UI5 Cache Deletion",
+		"description": "Delete UI5 cache entries",
+		"tags": "UI5"
 	},
 	{
 		"tcode": "STC01",
-		"description": "Configuratin lists",
-		"tags": [],
-		"favorite": false
+		"title": "Task List Execution",
+		"description": "Execute predefined task lists",
+		"tags": "GENERAL"
 	},
 	{
 		"tcode": "SE03",
-		"description": "Transport Organizer Tools (expert)",
-		"tags": [],
-		"favorite": false
+		"title": "Transport Organizer Tools",
+		"description": "Advanced transport management",
+		"tags": "GENERAL"
 	},
 	{
 		"tcode": "SE38",
-		"description": "ABAP Editor or program execution like /UI5/UI5_REPOSITORY_LOAD",
-		"tags": [],
-		"favorite": false
+		"title": "ABAP Editor",
+		"description": "Create and execute ABAP programs",
+		"tags": "ABAP"
 	},
 	{
 		"tcode": "SMICM",
-		"description": "ICM Monitor (server cache reset)",
-		"tags": [],
-		"favorite": false
+		"title": "ICM Monitor",
+		"description": "Manage and monitor the Internet Communication Manager",
+		"tags": "GENERAL"
 	},
 	{
 		"tcode": "SA38",
-		"description": "Search and execute ABAP programs",
-		"tags": [],
-		"favorite": false
+		"title": "ABAP Program Execution",
+		"description": "Search and run ABAP reports",
+		"tags": "ABAP"
 	},
 	{
 		"tcode": "SE91",
-		"description": "Message class maintenance or where-used determination",
-		"tags": [],
-		"favorite": false
+		"title": "Message Class Maintenance",
+		"description": "Define and manage system messages",
+		"tags": "ABAP"
 	},
 	{
 		"tcode": "SE93",
-		"description": "Search, edit and create transaction codes",
-		"tags": [],
-		"favorite": false
+		"title": "Transaction Code Maintenance",
+		"description": "Create and manage custom transaction codes",
+		"tags": "GENERAL"
 	},
 	{
 		"tcode": "/iwfnd/virus_scan",
-		"description": "Virus Scan profile configuration",
-		"tags": [],
-		"favorite": false
+		"title": "Virus Scan Profile Configuration",
+		"description": "Set up virus scanning for UI5",
+		"tags": "UI5"
+	},
+	{
+		"tcode": "SE37",
+		"title": "Function Builder",
+		"description": "Develop and test function modules",
+		"tags": "ABAP"
+	},
+	{
+		"tcode": "SE21",
+		"title": "Package Builder",
+		"description": "Create and manage ABAP development packages",
+		"tags": "ABAP"
+	},
+	{
+		"tcode": "SE24",
+		"title": "Class Builder",
+		"description": "Develop and maintain ABAP classes",
+		"tags": "ABAP"
+	},
+	{
+		"tcode": "/SCWM/MON",
+		"title": "EWM Monitor",
+		"description": "Analyze and track Extended Warehouse Management processes",
+		"tags": "EWM"
+	},
+
+	{
+		"tcode": "/SCWM/PRDO",
+		"title": "Warehouse Request Processing",
+		"description": "Manage warehouse requests and deliveries",
+		"tags": "EWM"
+	},
+	{
+		"tcode": "/SCWM/TO_CONF",
+		"title": "Warehouse Task Confirmation",
+		"description": "Confirm and process warehouse tasks",
+		"tags": "EWM"
+	},
+	{
+		"tcode": "/SCWM/ADHU",
+		"title": "Ad-Hoc Handling Unit Change",
+		"description": "Modify handling unit assignments in the warehouse",
+		"tags": "EWM"
+	},
+	{
+		"tcode": "/SCWM/RFUI",
+		"title": "Radio Frequency Framework",
+		"description": "Execute warehouse processes via RF devices",
+		"tags": "EWM"
+	},
+	{
+		"tcode": "/SCWM/PACK",
+		"title": "Packing Work Center",
+		"description": "Manage packing and repacking of handling units",
+		"tags": "EWM"
+	},
+	{
+		"tcode": "MIGO",
+		"title": "Goods Movement",
+		"description": "Post goods receipt, issue, and transfer postings",
+		"tags": "ERP"
+	},
+	{
+		"tcode": "VL02N",
+		"title": "Change Outbound Delivery",
+		"description": "Modify outbound deliveries",
+		"tags": "ERP"
+	},
+	{
+		"tcode": "VL06O",
+		"title": "Outbound Delivery Monitor",
+		"description": "Monitor outbound delivery processing",
+		"tags": "ERP"
+	},
+	{
+		"tcode": "ME21N",
+		"title": "Create Purchase Order",
+		"description": "Create and manage purchase orders",
+		"tags": "ERP"
+	},
+	{
+		"tcode": "ME22N",
+		"title": "Change Purchase Order",
+		"description": "Modify existing purchase orders",
+		"tags": "ERP"
+	},
+	{
+		"tcode": "CO11N",
+		"title": "Production Order Confirmation",
+		"description": "Confirm production order processing steps",
+		"tags": "ERP"
+	},
+	{
+		"tcode": "MD04",
+		"title": "Stock/Requirements List",
+		"description": "Analyze material availability and planning requirements",
+		"tags": "ERP"
+	},
+	{
+		"tcode": "MM03",
+		"title": "Display Material Master",
+		"description": "View detailed material master data",
+		"tags": "ERP"
 	}
 ]

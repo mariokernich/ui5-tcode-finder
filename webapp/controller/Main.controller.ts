@@ -19,6 +19,7 @@ import ListBinding from "sap/ui/model/ListBinding";
 import Util from "../util/Util";
 import Database, { Transaction } from "../util/Database";
 import VBox from "sap/m/VBox";
+import { IconTabBar$SelectEvent } from "sap/m/IconTabBar";
 
 type Action = keyof MessageBox["Action"];
 
@@ -27,20 +28,42 @@ type Action = keyof MessageBox["Action"];
  */
 export default class Main extends BaseController {
 	private db: Database;
+	private standardTransactions: Transaction[];
+
+	private local = {
+		selectedTag: "ALL",
+	};
 
 	public onInit() {
 		this.db = new Database();
 		void this.handleInit();
 		this.showWelcomeDialog();
+		this.setModel(new JSONModel(this.local, true), "local");
 	}
 
 	private async handleInit() {
+		const model = new JSONModel();
+		await model.loadData("model/transactions.json");
+		this.standardTransactions = model.getData() as Transaction[];
+
 		await this.db.open();
-		const transactions = await this.db.getTransactions();
-		if (transactions.length === 0) {
-			await this.handleResetFactory();
-		}
-		await this.refresh();
+		const customTransactions = await this.db.getTransactions();
+		const favoriteTransactions = await this.db.getFavoriteTransactions();
+		const transactions = [...this.standardTransactions, ...customTransactions];
+
+		// Merge favorite status
+		transactions.forEach((transaction) => {
+			transaction.favorite = favoriteTransactions.some(
+				(fav) => fav.tcode === transaction.tcode
+			);
+		});
+
+		const viewModel = new JSONModel(transactions);
+		this.getView().setModel(viewModel);
+
+		this.sortTable();
+		this.updateDeleteButtonState();
+		this.focusSearch();
 	}
 
 	private async handleResetFactory() {
@@ -52,15 +75,22 @@ export default class Main extends BaseController {
 	}
 
 	private async refresh(): Promise<void> {
-		const model = new JSONModel();
-		const transactions = await this.db.getTransactions();
+		const customTransactions = await this.db.getTransactions();
+		const transactions = [...this.standardTransactions, ...customTransactions];
+		const favoriteTransactions = await this.db.getFavoriteTransactions();
 
-		model.setData(transactions);
+		transactions.forEach((transaction) => {
+			transaction.favorite = favoriteTransactions.some(
+				(fav) => fav.tcode === transaction.tcode
+			);
+		});
+
+		const model = new JSONModel(transactions);
 		this.getView().setModel(model);
 
+		this.filterTable();
 		this.sortTable();
 		this.updateDeleteButtonState();
-
 		this.focusSearch();
 	}
 
@@ -141,6 +171,7 @@ export default class Main extends BaseController {
 		}
 
 		filters.push(new Filter("tcode", FilterOperator.Contains, query));
+		filters.push(new Filter("title", FilterOperator.Contains, query));
 		filters.push(new Filter("description", FilterOperator.Contains, query));
 
 		binding.filter(
@@ -158,7 +189,11 @@ export default class Main extends BaseController {
 		const tcode = context.getProperty("tcode") as string;
 		const favorite = context.getProperty("favorite") as boolean;
 
-		await this.db.updateFavorite(tcode, !favorite);
+		if (favorite) {
+			await this.db.removeFavorite(tcode);
+		} else {
+			await this.db.addFavorite(tcode);
+		}
 		await this.refresh();
 	}
 
@@ -173,6 +208,7 @@ export default class Main extends BaseController {
 		const inputCode = new Input({ width: "100%" }).addStyleClass(
 			"sapUiSmallMarginBottom"
 		);
+		const inputTitle = new Input("titleInput", { width: "100%" });
 		const inputDescription = new Input("descriptionInput", { width: "100%" });
 		const dialog = new Dialog({
 			title: "Add Transaction",
@@ -181,6 +217,8 @@ export default class Main extends BaseController {
 					items: [
 						new Label({ text: "Transaction Code", labelFor: "tcodeInput" }),
 						inputCode,
+						new Label({ text: "Title", labelFor: "titleInput" }),
+						inputTitle,
 						new Label({ text: "Description", labelFor: "descriptionInput" }),
 						inputDescription,
 					],
@@ -195,6 +233,7 @@ export default class Main extends BaseController {
 					}
 					void this.handleAddTransaction(
 						inputCode.getValue(),
+						inputTitle.getValue(),
 						inputDescription.getValue()
 					);
 					dialog.close();
@@ -217,12 +256,13 @@ export default class Main extends BaseController {
 
 	private async handleAddTransaction(
 		tcode: string,
+		title: string,
 		description: string
 	): Promise<void> {
 		if (await this.transactionExists(tcode)) {
 			MessageToast.show(`Transaktionscode ${tcode} existiert bereits.`);
 		} else {
-			await this.addTransaction(tcode, description);
+			await this.addTransaction(tcode, title, description);
 		}
 	}
 
@@ -233,9 +273,10 @@ export default class Main extends BaseController {
 
 	private async addTransaction(
 		tcode: string,
+		title: string,
 		description: string
 	): Promise<void> {
-		const newTransaction = { tcode, description, favorite: false };
+		const newTransaction = { tcode, title, description, tags: "CUSTOM" };
 		await this.db.addTransaction(newTransaction);
 		await this.refresh();
 	}
@@ -267,21 +308,16 @@ export default class Main extends BaseController {
 		);
 	}
 
-	public onResetFactoryDefaults(): void {
-		MessageBox.confirm("Are you sure you want to reset to factory defaults?", {
-			actions: [MessageBox.Action.YES, MessageBox.Action.NO],
-			onClose: async (action: Action) => {
-				if (action === MessageBox.Action.YES) {
-					await this.handleResetFactory();
-				}
-			},
-		});
-	}
-
 	private updateDeleteButtonState(): void {
 		const table = this.byId("transactionTable") as Table;
 		const deleteButton = this.byId("deleteButton") as Button;
-		deleteButton.setEnabled(table.getSelectedItems().length > 0);
+		const selectedItems = table.getSelectedItems();
+		const canDelete = selectedItems.every((item) => {
+			const context = item.getBindingContext();
+			const tags = context.getProperty("tags") as string;
+			return tags.includes("CUSTOM");
+		});
+		deleteButton.setEnabled(canDelete);
 	}
 
 	public onSelectionChange(): void {
@@ -292,9 +328,15 @@ export default class Main extends BaseController {
 		const item = event.getSource();
 		const context = item.getBindingContext();
 		const tcode = context.getProperty("tcode") as string;
+		const title = context.getProperty("title") as string;
 		const description = context.getProperty("description") as string;
+		const tags = context.getProperty("tags") as string;
 
-		this.handleEditTransaction(tcode, description);
+		if (tags.includes("CUSTOM")) {
+			this.handleEditTransaction(tcode, title, description);
+		} else {
+			MessageToast.show("Standard transactions cannot be edited.");
+		}
 	}
 
 	public onOpenSettings(): void {
@@ -308,14 +350,7 @@ export default class Main extends BaseController {
 			title: "Settings",
 			content: [
 				new VBox({
-					items: [
-						checkBox,
-						new Button({
-							text: "Reset factory defaults",
-							type: "Reject",
-							press: () => void this.onResetFactoryDefaults(),
-						}),
-					],
+					items: [checkBox],
 				}).addStyleClass("sapUiSmallMargin"),
 			],
 			beginButton: new Button({
@@ -343,7 +378,15 @@ export default class Main extends BaseController {
 		dialog.open();
 	}
 
-	private handleEditTransaction(tcode: string, description: string): void {
+	private handleEditTransaction(
+		tcode: string,
+		title: string,
+		description: string
+	): void {
+		const inputTitle = new Input({
+			width: "100%",
+			value: title,
+		});
 		const inputDescription = new Input({
 			width: "100%",
 			value: description,
@@ -353,6 +396,8 @@ export default class Main extends BaseController {
 			content: [
 				new VBox({
 					items: [
+						new Label({ text: "Title", labelFor: "titleInput" }),
+						inputTitle,
 						new Label({ text: "Description", labelFor: "descriptionInput" }),
 						inputDescription,
 					],
@@ -361,7 +406,11 @@ export default class Main extends BaseController {
 			beginButton: new Button({
 				text: "Save",
 				press: () => {
-					void this.handleUpdateTransaction(tcode, inputDescription.getValue());
+					void this.handleUpdateTransaction(
+						tcode,
+						inputTitle.getValue(),
+						inputDescription.getValue()
+					);
 					dialog.close();
 					dialog.destroy();
 				},
@@ -382,9 +431,37 @@ export default class Main extends BaseController {
 
 	private async handleUpdateTransaction(
 		tcode: string,
+		title: string,
 		description: string
 	): Promise<void> {
-		await this.db.updateTransactionDescription(tcode, description);
+		await this.db.updateTransaction(tcode, title, description);
 		await this.refresh();
+	}
+
+	private filterTable() {
+		const table = this.byId("transactionTable") as Table;
+		const binding = table.getBinding("items") as ListBinding;
+		const selectedTag = this.local.selectedTag;
+
+		if (selectedTag === "ALL") {
+			binding.filter([]);
+			return;
+		}
+
+		const filter = new Filter("tags", FilterOperator.Contains, selectedTag);
+		binding.filter([filter], "Application");
+	}
+
+	public onIconTabBarSelect(event: IconTabBar$SelectEvent): void {
+		const selectedKey = event.getSource().getSelectedKey();
+		const table = this.byId("transactionTable") as Table;
+
+		if (selectedKey === "CUSTOM") {
+			table.setMode("MultiSelect");
+		} else {
+			table.setMode("None");
+		}
+
+		this.filterTable();
 	}
 }
