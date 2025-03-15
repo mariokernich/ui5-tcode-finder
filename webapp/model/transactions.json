@@ -151,7 +151,7 @@
 	},
 	{
 		"tcode": "SA38",
-		"description": "Search and execute ABAP programs and transactions",
+		"description": "Search and execute ABAP programs",
 		"tags": [],
 		"favorite": false
 	},
