@@ -47,9 +47,11 @@ export default class Main extends BaseController {
 
 	public onInit() {
 		this.db = new Database();
+		this.setDefaultSettings();
 		void this.handleInit();
 		this.showWelcomeDialog();
 		this.setModel(new JSONModel(this.local, true), "local");
+		this.handleTheme();
 	}
 
 	private async handleInit() {
@@ -76,6 +78,33 @@ export default class Main extends BaseController {
 		this.sortTable();
 		this.updateDeleteButtonState();
 		this.focusSearch();
+	}
+
+	private setDefaultSettings() {
+		if (localStorage.getItem("copyWithPrefix") === null) {
+			localStorage.setItem("copyWithPrefix", "true");
+		}
+		if (localStorage.getItem("resetSearchAfterCopy") === null) {
+			localStorage.setItem("resetSearchAfterCopy", "true");
+		}
+		if (localStorage.getItem("theme") === null) {
+			localStorage.setItem("theme", "System");
+		}
+	}
+
+	private handleTheme() {
+		const theme = localStorage.getItem("theme") || "System";
+		this.applyTheme(theme);
+
+		const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
+		mediaQuery.addEventListener("change", (e) => {
+			const darkMode = e.matches;
+			if (darkMode) {
+				this.applyTheme("Dark");
+			} else {
+				this.applyTheme("Light");
+			}
+		});
 	}
 
 	private async refresh(): Promise<void> {
