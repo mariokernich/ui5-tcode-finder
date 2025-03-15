@@ -75,22 +75,22 @@
                     <IconTabFilter
                         key="ABAP"
                         text="{= 'ABAP (' + ${local>/abapCount} + ')' }"
-                        icon="sap-icon://program-triangles"
+                        icon="sap-icon://syntax"
                     />
                     <IconTabFilter
                         key="EWM"
                         text="{= 'SAP EWM (' + ${local>/ewmCount} + ')' }"
-                        icon="sap-icon://program-triangles"
+                        icon="sap-icon://business-objects-explorer"
                     />
                     <IconTabFilter
                         key="ERP"
                         text="{= 'SAP ERP (' + ${local>/erpCount} + ')' }"
-                        icon="sap-icon://program-triangles"
+                        icon="sap-icon://factory"
                     />
                     <IconTabFilter
                         key="CUSTOM"
                         text="{= 'CUSTOM (' + ${local>/customCount} + ')' }"
-                        icon="sap-icon://program-triangles"
+                        icon="sap-icon://wrench"
                     />
                 </items>
             </IconTabBar>
