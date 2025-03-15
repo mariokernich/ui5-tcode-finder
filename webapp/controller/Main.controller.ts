@@ -419,7 +419,7 @@ export default class Main extends BaseController {
 				},
 			}),
 			endButton: new Button({
-				text: "Close",
+				text: "Cancel",
 				icon: "sap-icon://decline",
 				press: () => {
 					dialog.close();

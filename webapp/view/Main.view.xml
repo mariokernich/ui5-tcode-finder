@@ -18,7 +18,7 @@
                     src="sap-icon://sap-ui5"
                     size="3rem"
                 />
-                <Title text="SAP T-Code search" />
+                <Title text="T-Code Quick Finder" />
                 <ToolbarSpacer />
                 <SearchField
                     placeholder="Search for transaction..."
