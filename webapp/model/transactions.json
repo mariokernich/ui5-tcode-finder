@@ -151,7 +151,7 @@
 	},
 	{
 		"tcode": "SA38",
-		"description": "Recalculate index of UI5 resources",
+		"description": "Search and execute ABAP programs and transactions",
 		"tags": [],
 		"favorite": false
 	},
