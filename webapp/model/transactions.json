@@ -495,7 +495,13 @@
 	{
 		"tcode": "SCI",
 		"title": "ABAP Code Inspector",
-		"description": "Analyze and optimize ABAP code",
+		"description": "Execute ABAP Code inspector checks",
+		"tags": "GENERAL,ABAP"
+	},
+	{
+		"tcode": "SCII",
+		"title": "ABAP Code Inspector",
+		"description": "View and analyze ABAP Code inspector results",
 		"tags": "GENERAL,ABAP"
 	},
 	{
