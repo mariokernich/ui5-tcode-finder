@@ -26,10 +26,10 @@ export default class DialogManager extends UI5Element {
 							<p>Here are some key features:</p>
 							<ul>
 								<li><strong>Search:</strong> Use the search bar to find T-Codes by code, title, or description.</li>
-								<li><strong>Copy:</strong> Click on a T-Code to copy it to your clipboard. You can also choose to copy with a /n prefix which can be configured in settings.</li>
+								<li><strong>Copy:</strong> Click on a T-Code to copy it to your clipboard. You can also choose to copy with a /n or /o prefix or open them in WebGUI which can be configured in settings.</li>
 								<li><strong>Favorites:</strong> Mark T-Codes as favorites for quick access.</li>
 								<li><strong>Custom T-Codes:</strong> Add, edit, and delete your own custom T-Codes in the CUSTOM group. Right click a cell to edit existing ones.</li>
-								<li><strong>Settings:</strong> Customize your experience with options like theme selection and search reset behavior.</li>
+								<li><strong>Settings:</strong> Customize your experience with options like theme selection and search behavior.</li>
 							</ul>
 							<p>Enjoy your development journey! 🌟</p>
 						`,
