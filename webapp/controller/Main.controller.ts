@@ -623,9 +623,11 @@ export default class Main extends BaseController {
 		switch (theme) {
 			case "Light":
 				DarkModeHelper.toLight();
+				this.local.dark = false;
 				break;
 			case "Dark":
 				DarkModeHelper.toDark();
+				this.local.dark = true;
 				break;
 			case "System":
 			default: {
@@ -634,8 +636,10 @@ export default class Main extends BaseController {
 				).matches;
 				if (prefersDarkScheme) {
 					DarkModeHelper.toDark();
+					this.local.dark = true;
 				} else {
 					DarkModeHelper.toLight();
+					this.local.dark = false;
 				}
 				break;
 			}
