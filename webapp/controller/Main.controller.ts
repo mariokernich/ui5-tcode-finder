@@ -33,6 +33,15 @@ import RadioButtonGroup from "sap/m/RadioButtonGroup";
 
 type Action = keyof MessageBox["Action"];
 
+const COPY_OPTIONS = {
+	JUST_COPY: "Just copy T-Code",
+	N_PREFIX: "Copy T-Code with /n prefix",
+	O_PREFIX: "Copy T-Code with /o prefix",
+	DEFAULT:
+		"Copy T-Code with /n prefix by default and with /o if shift key is pressed",
+	WEB_GUI: "Open in WebGUI",
+};
+
 /**
  * @namespace de.kernich.tcode.controller
  */
@@ -173,20 +182,17 @@ export default class Main extends BaseController {
 	}
 
 	private async handleCopy(tcode: string) {
-		const copyOption = localStorage.getItem("copyOption") || "Just copy T-Code";
+		const copyOption =
+			localStorage.getItem("copyOption") || COPY_OPTIONS.DEFAULT;
 		let sapSystemUrl = localStorage.getItem("sapSystemUrl") || "";
 		let textToCopy = tcode;
 
 		switch (copyOption) {
-			case "Copy T-Code with /n prefix":
-				textToCopy = `/n${tcode}`;
-				MessageToast.show(`Transaction ${tcode} copied.`);
-				break;
-			case "Copy T-Code with /o prefix":
+			case COPY_OPTIONS.O_PREFIX:
 				textToCopy = `/o${tcode}`;
 				MessageToast.show(`Transaction ${tcode} copied.`);
 				break;
-			case "Copy T-Code with /n prefix by default and with /o if pressed shift key":
+			case COPY_OPTIONS.DEFAULT:
 				if (this.local.shiftPressed) {
 					textToCopy = `/o${tcode}`;
 				} else {
@@ -194,7 +200,7 @@ export default class Main extends BaseController {
 				}
 				MessageToast.show(`Transaction ${tcode} copied.`);
 				break;
-			case "Open in WebGUI":
+			case COPY_OPTIONS.WEB_GUI:
 				if (sapSystemUrl.length === 0) {
 					MessageToast.show("Please set SAP System URL in settings.");
 					return;
@@ -427,7 +433,8 @@ export default class Main extends BaseController {
 	}
 
 	public onOpenSettings(): void {
-		const copyOption = localStorage.getItem("copyOption") || "Just copy T-Code";
+		const copyOption =
+			localStorage.getItem("copyOption") || COPY_OPTIONS.DEFAULT;
 		const sapSystemUrl = localStorage.getItem("sapSystemUrl") || "";
 		const resetSearchAfterCopy =
 			localStorage.getItem("resetSearchAfterCopy") !== "false";
@@ -437,26 +444,22 @@ export default class Main extends BaseController {
 		) as string[];
 		const radioButtonGroup = new RadioButtonGroup({
 			selectedIndex: [
-				"Just copy T-Code",
-				"Copy T-Code with /n prefix",
-				"Copy T-Code with /o prefix",
-				"Copy T-Code with /n prefix by default and with /o if pressed shift key",
-				"Open in WebGUI",
+				COPY_OPTIONS.JUST_COPY,
+				COPY_OPTIONS.DEFAULT,
+				COPY_OPTIONS.O_PREFIX,
+				COPY_OPTIONS.WEB_GUI,
 			].indexOf(copyOption),
 			buttons: [
-				new RadioButton({ text: "Just copy T-Code" }),
-				new RadioButton({ text: "Copy T-Code with /n prefix" }),
-				new RadioButton({ text: "Copy T-Code with /o prefix" }),
-				new RadioButton({
-					text: "Copy T-Code with /n prefix by default and with /o if pressed shift key",
-				}),
-				new RadioButton({ text: "Open in WebGUI" }),
+				new RadioButton({ text: COPY_OPTIONS.JUST_COPY }),
+				new RadioButton({ text: COPY_OPTIONS.DEFAULT }),
+				new RadioButton({ text: COPY_OPTIONS.O_PREFIX }),
+				new RadioButton({ text: COPY_OPTIONS.WEB_GUI }),
 			],
 			select: (event) => {
 				const selectedIndex = event.getParameter("selectedIndex");
 				const buttons = radioButtonGroup.getButtons();
 				const selectedText = buttons[selectedIndex].getText();
-				if (selectedText === "Open in WebGUI") {
+				if (selectedText === COPY_OPTIONS.WEB_GUI) {
 					sapSystemUrlInput.setVisible(true);
 				} else {
 					sapSystemUrlInput.setVisible(false);
@@ -468,7 +471,7 @@ export default class Main extends BaseController {
 			placeholder:
 				"Enter base SAP System URL like https://example.com:50000...",
 			value: sapSystemUrl,
-			visible: copyOption === "Open in WebGUI",
+			visible: copyOption === COPY_OPTIONS.WEB_GUI,
 		});
 		const checkBoxResetSearch = new CheckBox({
 			text: "Reset search after copy",
