@@ -26,12 +26,11 @@ export default class DialogManager extends UI5Element {
 							<p>Here are some key features:</p>
 							<ul>
 								<li><strong>Search:</strong> Use the search bar to find T-Codes by code, title, or description.</li>
-								<li><strong>Copy:</strong> Click on a T-Code to copy it to your clipboard. You can also choose to copy with a /n prefix.</li>
+								<li><strong>Copy:</strong> Click on a T-Code to copy it to your clipboard. You can also choose to copy with a /n prefix which can be configured in settings.</li>
 								<li><strong>Favorites:</strong> Mark T-Codes as favorites for quick access.</li>
-								<li><strong>Custom T-Codes:</strong> Add, edit, and delete your own custom T-Codes.</li>
+								<li><strong>Custom T-Codes:</strong> Add, edit, and delete your own custom T-Codes in the CUSTOM group. Right click a cell to edit existing ones.</li>
 								<li><strong>Settings:</strong> Customize your experience with options like theme selection and search reset behavior.</li>
 							</ul>
-							<p>To edit a T-Code, right-click on any cell item. If you have any feedback or feature requests, feel free to open an <a href="https://github.com/marioke/de.kernich.tcode/issues" target="_blank">issue on GitHub</a> 🚀</p>
 							<p>Enjoy your development journey! 🌟</p>
 						`,
 					}).addStyleClass("sapUiSmallMarginBegin sapUiSmallMarginEnd"),

@@ -490,6 +490,10 @@ export default class Main extends BaseController {
 		) as string[];
 		const iconTabBar = this.byId("iconTabBar") as IconTabBar;
 		iconTabBar.getItems().forEach((item: IconTab) => {
+			if ((item as IconTabFilter).getKey() === "ALL") {
+				(item as IconTabFilter).setVisible(true);
+				return;
+			}
 			(item as IconTabFilter).setVisible(
 				visibleGroups.includes((item as IconTabFilter).getKey())
 			);
