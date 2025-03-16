@@ -672,6 +672,8 @@ export default class Main extends BaseController {
 		this.local.erpCount = counts.erpCount;
 		this.local.fiCount = counts.fiCount;
 		this.local.customCount = counts.customCount;
+
+		this.filterTable();
 	}
 
 	public onOpenGitHub() {
