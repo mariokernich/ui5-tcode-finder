@@ -617,5 +617,11 @@
 		"title": "Smart Forms",
 		"description": "Create and manage Smart Forms",
 		"tags": "GENERAL"
+	},
+	{
+		"tcode": "snote",
+		"title": "SAP Note Assistant",
+		"description": "Apply and manage SAP notes",
+		"tags": "GENERAL"
 	}
 ]
