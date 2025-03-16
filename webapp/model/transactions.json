@@ -575,5 +575,47 @@
 		"title": "License Administration",
 		"description": "Manage and view system licenses",
 		"tags": "GENERAL"
+	},
+	{
+		"tcode": "SM04",
+		"title": "User List",
+		"description": "Display and manage active user sessions",
+		"tags": "GENERAL"
+	},
+	{
+		"tcode": "SM21",
+		"title": "System Log",
+		"description": "View and analyze system log entries",
+		"tags": "GENERAL"
+	},
+	{
+		"tcode": "SU12",
+		"title": "Mass User Maintenance",
+		"description": "Mass update user parameters and authorizations",
+		"tags": "GENERAL"
+	},
+	{
+		"tcode": "SCCLN",
+		"title": "Local Client Copy",
+		"description": "Copy client-specific data and settings within the same system",
+		"tags": "GENERAL"
+	},
+	{
+		"tcode": "SCMP",
+		"title": "Compare table contents",
+		"description": "Determine differences of table contents between another system",
+		"tags": "GENERAL,ABAP"
+	},
+	{
+		"tcode": "SCU3",
+		"title": "Table history",
+		"description": "Display table changes and history",
+		"tags": "GENERAL,ABAP"
+	},
+	{
+		"tcode": "smartforms",
+		"title": "Smart Forms",
+		"description": "Create and manage Smart Forms",
+		"tags": "GENERAL"
 	}
 ]
