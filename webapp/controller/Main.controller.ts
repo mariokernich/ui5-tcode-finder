@@ -28,6 +28,8 @@ import Constants from "../Constants";
 import { IconTab } from "sap/m/library";
 import IconTabFilter from "sap/m/IconTabFilter";
 import Panel from "sap/m/Panel";
+import RadioButton from "sap/m/RadioButton";
+import RadioButtonGroup from "sap/m/RadioButtonGroup";
 
 type Action = keyof MessageBox["Action"];
 
@@ -49,25 +51,41 @@ export default class Main extends BaseController {
 		fiCount: 0,
 		customCount: 0,
 		busy: false,
+		shiftPressed: false,
 	};
 
 	public onInit() {
 		this.db = new Database();
-		this.setDefaultSettings();
 		void this.handleInit();
 		this.showWelcomeDialog();
-		this.setModel(new JSONModel(this.local, true), "local");
-		this.handleTheme();
 	}
 
 	private async handleInit() {
+		this.setDefaultSettings();
+		this.setModel(new JSONModel(this.local, true), "local");
 		const model = new JSONModel();
 		await model.loadData("model/transactions.json");
 		this.standardTransactions = model.getData() as Transaction[];
 
 		await this.db.open();
 		await this.refresh();
+		this.handleTheme();
 		this.updateVisibleGroups();
+		this.handleShift();
+	}
+
+	private handleShift() {
+		document.addEventListener("keydown", (event) => {
+			if (event.shiftKey) {
+				this.local.shiftPressed = true;
+			}
+		});
+
+		document.addEventListener("keyup", (event) => {
+			if (!event.shiftKey) {
+				this.local.shiftPressed = false;
+			}
+		});
 	}
 
 	private setDefaultSettings() {
@@ -155,9 +173,44 @@ export default class Main extends BaseController {
 	}
 
 	private async handleCopy(tcode: string) {
-		const prefix =
-			localStorage.getItem("copyWithPrefix") === "true" ? "/n" : "";
-		await Util.copy2Clipboard(prefix + tcode);
+		const copyOption = localStorage.getItem("copyOption") || "Just copy T-Code";
+		let sapSystemUrl = localStorage.getItem("sapSystemUrl") || "";
+		let textToCopy = tcode;
+
+		switch (copyOption) {
+			case "Copy T-Code with /n prefix":
+				textToCopy = `/n${tcode}`;
+				MessageToast.show(`Transaction ${tcode} copied.`);
+				break;
+			case "Copy T-Code with /o prefix":
+				textToCopy = `/o${tcode}`;
+				MessageToast.show(`Transaction ${tcode} copied.`);
+				break;
+			case "Copy T-Code with /n prefix by default and with /o if pressed shift key":
+				if (this.local.shiftPressed) {
+					textToCopy = `/o${tcode}`;
+				} else {
+					textToCopy = `/n${tcode}`;
+				}
+				MessageToast.show(`Transaction ${tcode} copied.`);
+				break;
+			case "Open in WebGUI":
+				if (sapSystemUrl.length === 0) {
+					MessageToast.show("Please set SAP System URL in settings.");
+					return;
+				}
+				if (sapSystemUrl.endsWith("/")) {
+					sapSystemUrl = sapSystemUrl.slice(0, -1);
+				}
+				tcode = encodeURIComponent(tcode);
+				window.open(
+					`${sapSystemUrl}/sap/bc/gui/sap/its/webgui?~transaction=${tcode}`,
+					"_blank"
+				);
+				return;
+		}
+
+		await Util.copy2Clipboard(textToCopy);
 		MessageToast.show(`Transaction ${tcode} copied.`);
 		if (localStorage.getItem("resetSearchAfterCopy") === "true") {
 			this.resetSearch();
@@ -374,21 +427,53 @@ export default class Main extends BaseController {
 	}
 
 	public onOpenSettings(): void {
-		const copyWithPrefix = localStorage.getItem("copyWithPrefix") !== "false";
+		const copyOption = localStorage.getItem("copyOption") || "Just copy T-Code";
+		const sapSystemUrl = localStorage.getItem("sapSystemUrl") || "";
 		const resetSearchAfterCopy =
 			localStorage.getItem("resetSearchAfterCopy") !== "false";
 		const currentTheme = localStorage.getItem("theme") || "System";
 		const visibleGroups: string[] = JSON.parse(
 			localStorage.getItem("visibleGroups") || "[]"
 		) as string[];
-		const checkBoxCopyPrefix = new CheckBox({
-			text: "Copy T-Codes with /n prefix",
-			selected: copyWithPrefix,
+		const radioButtonGroup = new RadioButtonGroup({
+			selectedIndex: [
+				"Just copy T-Code",
+				"Copy T-Code with /n prefix",
+				"Copy T-Code with /o prefix",
+				"Copy T-Code with /n prefix by default and with /o if pressed shift key",
+				"Open in WebGUI",
+			].indexOf(copyOption),
+			buttons: [
+				new RadioButton({ text: "Just copy T-Code" }),
+				new RadioButton({ text: "Copy T-Code with /n prefix" }),
+				new RadioButton({ text: "Copy T-Code with /o prefix" }),
+				new RadioButton({
+					text: "Copy T-Code with /n prefix by default and with /o if pressed shift key",
+				}),
+				new RadioButton({ text: "Open in WebGUI" }),
+			],
+			select: (event) => {
+				const selectedIndex = event.getParameter("selectedIndex");
+				const buttons = radioButtonGroup.getButtons();
+				const selectedText = buttons[selectedIndex].getText();
+				if (selectedText === "Open in WebGUI") {
+					sapSystemUrlInput.setVisible(true);
+				} else {
+					sapSystemUrlInput.setVisible(false);
+				}
+			},
+		});
+		const sapSystemUrlInput = new Input({
+			width: "100%",
+			placeholder:
+				"Enter base SAP System URL like https://example.com:50000...",
+			value: sapSystemUrl,
+			visible: copyOption === "Open in WebGUI",
 		});
 		const checkBoxResetSearch = new CheckBox({
 			text: "Reset search after copy",
 			selected: resetSearchAfterCopy,
-		}).addStyleClass("sapUiSmallMarginBottom");
+		}).addStyleClass("sapUiSmallMarginTop");
 		const themeSelect = new Select({
 			selectedKey: currentTheme,
 			items: [
@@ -420,7 +505,7 @@ export default class Main extends BaseController {
 
 		const dialog = new Dialog({
 			title: "Settings",
-			contentWidth: "500px",
+			contentWidth: "550px",
 			content: [
 				new VBox({
 					items: [
@@ -431,8 +516,6 @@ export default class Main extends BaseController {
 							content: [
 								new VBox({
 									items: [
-										checkBoxCopyPrefix,
-										checkBoxResetSearch,
 										new HBox({
 											items: [
 												new Label({ text: "Design:" }).addStyleClass(
@@ -443,6 +526,20 @@ export default class Main extends BaseController {
 											alignItems: "Center",
 											alignContent: "Center",
 										}).addStyleClass("sapUiTinyMarginBegin"),
+									],
+								}),
+							],
+						}),
+						new Panel({
+							headerText: "Copy behavior",
+							expandable: true,
+							expanded: false,
+							content: [
+								new VBox({
+									items: [
+										radioButtonGroup,
+										sapSystemUrlInput,
+										checkBoxResetSearch,
 									],
 								}),
 							],
@@ -460,10 +557,11 @@ export default class Main extends BaseController {
 				text: "Save",
 				icon: "sap-icon://save",
 				press: () => {
-					localStorage.setItem(
-						"copyWithPrefix",
-						checkBoxCopyPrefix.getSelected().toString()
-					);
+					const selectedIndex = radioButtonGroup.getSelectedIndex();
+					const buttons = radioButtonGroup.getButtons();
+					const selectedText = buttons[selectedIndex].getText();
+					localStorage.setItem("copyOption", selectedText);
+					localStorage.setItem("sapSystemUrl", sapSystemUrlInput.getValue());
 					localStorage.setItem(
 						"resetSearchAfterCopy",
 						checkBoxResetSearch.getSelected().toString()
