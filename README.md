@@ -1,4 +1,4 @@
-# UI5/Fiori T-Code Quick Search
+# T-Code Quick Finder
 
 ![Build](https://github.com/marioke/de.kernich.tcode/actions/workflows/build.yml/badge.svg)
 ![Eslint](https://github.com/marioke/de.kernich.tcode/actions/workflows/eslint.yml/badge.svg)
@@ -6,7 +6,7 @@
 ![ui5lint](https://github.com/marioke/de.kernich.tcode/actions/workflows/ui5lint.yml/badge.svg)
 ![deploy](https://github.com/marioke/de.kernich.tcode/actions/workflows/deploy.yml/badge.svg)
 
-Welcome to the UI5/Fiori T-Code Quick Search project. This application provides a fast and efficient way to search for transaction codes (T-Codes) relevant to UI5 and Fiori development. A live demo is available at [tcode.kernich.de](https://tcode.kernich.de).
+Welcome to the UT-Code Quick Finder project. This application provides a fast and efficient way to search for transaction codes (T-Codes). A live demo is available at [tcodes.kernich.de](https://tcodes.kernich.de).
 
 ![Screenshot](screenshot.png)
 
@@ -25,7 +25,7 @@ This project demonstrates a TypeScript setup for developing UI5 applications. It
   
 ## Demo
 
-A live demo of the application can be accessed at [tcode.kernich.de](https://tcode.kernich.de).
+A live demo of the application can be accessed at [tcodes.kernich.de](https://tcodes.kernich.de).
 
 ## Requirements
 

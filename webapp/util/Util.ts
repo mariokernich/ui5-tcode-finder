@@ -7,4 +7,8 @@ export default class Util extends UI5Element {
 	static async copy2Clipboard(text: string): Promise<void> {
 		await navigator.clipboard.writeText(text);
 	}
+
+	static openUrl(url: string) {
+		window.open(url, "_blank");
+	}
 }

@@ -10,7 +10,6 @@ import Label from "sap/m/Label";
 import Input from "sap/m/Input";
 import MessageBox from "sap/m/MessageBox";
 import CheckBox from "sap/m/CheckBox";
-import FormattedText from "sap/m/FormattedText";
 import { MenuItem$PressEvent } from "sap/m/MenuItem";
 import { Button$PressEvent } from "sap/m/Button";
 import SearchField, { SearchField$LiveChangeEvent } from "sap/m/SearchField";
@@ -24,6 +23,8 @@ import DarkModeHelper from "../util/DarkModeHelper";
 import Select from "sap/m/Select";
 import Item from "sap/ui/core/Item";
 import HBox from "sap/m/HBox";
+import DialogManager from "../util/DialogManager";
+import Constants from "../Constants";
 
 type Action = keyof MessageBox["Action"];
 
@@ -42,6 +43,7 @@ export default class Main extends BaseController {
 		abapCount: 0,
 		ewmCount: 0,
 		erpCount: 0,
+		fiCount: 0,
 		customCount: 0,
 		busy: false,
 	};
@@ -131,49 +133,7 @@ export default class Main extends BaseController {
 			return;
 		}
 
-		const checkBox = new CheckBox({
-			text: "Do not show again",
-			selected: false,
-		});
-
-		const dialog = new Dialog({
-			title: "Welcome to T-Code Quick Finder! 🎉",
-			contentWidth: "500px",
-			content: new VBox({
-				items: [
-					new FormattedText({
-						htmlText: `
-							<p>Welcome to <strong>T-Code Quick Finder</strong>, your ultimate tool for managing SAP T-Codes efficiently. This application is designed to help you quickly find, copy, and manage transaction codes (T-Codes).</p>
-							<p>Here are some key features:</p>
-							<ul>
-								<li><strong>Search:</strong> Use the search bar to find T-Codes by code, title, or description.</li>
-								<li><strong>Copy:</strong> Click on a T-Code to copy it to your clipboard. You can also choose to copy with a /n prefix.</li>
-								<li><strong>Favorites:</strong> Mark T-Codes as favorites for quick access.</li>
-								<li><strong>Custom T-Codes:</strong> Add, edit, and delete your own custom T-Codes.</li>
-								<li><strong>Settings:</strong> Customize your experience with options like theme selection and search reset behavior.</li>
-							</ul>
-							<p>To edit a T-Code, right-click on any cell item. If you have any feedback or feature requests, feel free to open an <a href="https://github.com/marioke/de.kernich.tcode/issues" target="_blank">issue on GitHub</a> 🚀</p>
-							<p>Enjoy your development journey! 🌟</p>
-						`,
-					}).addStyleClass("sapUiSmallMarginBegin sapUiSmallMarginEnd"),
-					checkBox,
-				],
-			}),
-			beginButton: new Button({
-				text: "Close",
-				press: () => {
-					if (checkBox.getSelected()) {
-						localStorage.setItem("doNotShowWelcomeDialog", "true");
-					}
-					dialog.close();
-					dialog.destroy();
-				},
-			}),
-			draggable: true,
-		});
-
-		this.getView().addDependent(dialog);
-		dialog.open();
+		DialogManager.showWelcome();
 	}
 
 	public async onRowPress(event: Button$PressEvent): Promise<void> {
@@ -591,6 +551,7 @@ export default class Main extends BaseController {
 			abapCount: transactions.filter((t) => t.tags.includes("ABAP")).length,
 			ewmCount: transactions.filter((t) => t.tags.includes("EWM")).length,
 			erpCount: transactions.filter((t) => t.tags.includes("ERP")).length,
+			fiCount: transactions.filter((t) => t.tags.includes("FI")).length,
 			customCount: transactions.filter((t) => t.tags.includes("CUSTOM")).length,
 		};
 
@@ -600,14 +561,15 @@ export default class Main extends BaseController {
 		this.local.abapCount = counts.abapCount;
 		this.local.ewmCount = counts.ewmCount;
 		this.local.erpCount = counts.erpCount;
+		this.local.fiCount = counts.fiCount;
 		this.local.customCount = counts.customCount;
 	}
 
-	onOpenGitHub() {
-		window.open("https://github.com/marioke/de.kernich.tcode", "_blank");
+	public onOpenGitHub() {
+		Util.openUrl(Constants.GITHUB_URL);
 	}
 
-	onOpenLinkedIn() {
-		window.open("https://www.linkedin.com/in/mario-kernich/", "_blank");
+	public onOpenLinkedIn() {
+		Util.openUrl(Constants.LINKEDIN_URL);
 	}
 }

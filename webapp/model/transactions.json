@@ -395,5 +395,77 @@
 		"title": "Application Log (extended)",
 		"description": "View detailed application log entries",
 		"tags": "GENERAL,ABAP,UI5"
+	},
+	{
+		"tcode": "FB01",
+		"title": "Post Document",
+		"description": "Manually post a financial document",
+		"tags": "FI"
+	},
+	{
+		"tcode": "FBL1N",
+		"title": "Display Vendor Line Items",
+		"description": "View open and cleared vendor line items",
+		"tags": "FI"
+	},
+	{
+		"tcode": "FBL3N",
+		"title": "Display G/L Account Line Items",
+		"description": "View balances and transactions for G/L accounts",
+		"tags": "FI"
+	},
+	{
+		"tcode": "FBL5N",
+		"title": "Display Customer Line Items",
+		"description": "View open and cleared customer line items",
+		"tags": "FI"
+	},
+	{
+		"tcode": "FB03",
+		"title": "Display Document",
+		"description": "View posted financial documents",
+		"tags": "FI"
+	},
+	{
+		"tcode": "F110",
+		"title": "Automatic Payment Run",
+		"description": "Create and process automatic payment runs",
+		"tags": "FI"
+	},
+	{
+		"tcode": "F-53",
+		"title": "Post Vendor Payment",
+		"description": "Manually post a payment to a vendor",
+		"tags": "FI"
+	},
+	{
+		"tcode": "F-28",
+		"title": "Post Incoming Payment",
+		"description": "Manually post an incoming customer payment",
+		"tags": "FI"
+	},
+	{
+		"tcode": "F-32",
+		"title": "Clear Open Items",
+		"description": "Clear open customer and vendor items",
+		"tags": "FI"
+	},
+	{
+		"tcode": "OB52",
+		"title": "Manage Posting Periods",
+		"description": "Open and close financial posting periods",
+		"tags": "FI"
+	},
+	{
+		"tcode": "FS00",
+		"title": "G/L Account Master Record",
+		"description": "Create and manage general ledger accounts",
+		"tags": "FI"
+	},
+	{
+		"tcode": "OX02",
+		"title": "Define Company Code",
+		"description": "Create and maintain company codes",
+		"tags": "FI"
 	}
 ]

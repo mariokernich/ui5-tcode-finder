@@ -91,6 +91,11 @@
                         icon="sap-icon://factory"
                     />
                     <IconTabFilter
+                        key="FI"
+                        text="{= 'SAP FI (' + ${local>/fiCount} + ')' }"
+                        icon="sap-icon://money-bills"
+                    />
+                    <IconTabFilter
                         key="CUSTOM"
                         text="{= 'CUSTOM (' + ${local>/customCount} + ')' }"
                         icon="sap-icon://wrench"
