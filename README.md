@@ -6,7 +6,7 @@
 ![ui5lint](https://github.com/marioke/de.kernich.tcode/actions/workflows/ui5lint.yml/badge.svg)
 ![deploy](https://github.com/marioke/de.kernich.tcode/actions/workflows/deploy.yml/badge.svg)
 
-Welcome to the UT-Code Quick Finder project. This application provides a fast and efficient way to search for transaction codes (T-Codes). A live demo is available at [tcodes.kernich.de](https://tcodes.kernich.de).
+Welcome to the T-Code Quick Finder project. This application provides a fast and efficient way to search for transaction codes (T-Codes). A live demo is available at [tcodes.kernich.de](https://tcodes.kernich.de).
 
 ![Screenshot](screenshot.png)
 
@@ -16,13 +16,14 @@ This project demonstrates a TypeScript setup for developing UI5 applications. It
 
 ## Features
 
-- **Search Functionality**: Quickly search for T-Codes by their code or description.
+- **Search Functionality**: Quickly search for T-Codes by their code, title, or description.
 - **Copy to Clipboard**: Easily copy T-Codes to the clipboard by clicking on a table row.
 - **Favorite Management**: Mark T-Codes as favorites and sort them for easy access. Favorites are stored in local storage.
 - **Add Custom T-Codes**: Add your own T-Codes with descriptions.
-- **Delete T-Codes**: Delete selected T-Codes from the list.
-- **Reset to Factory Defaults**: Reset the T-Code list to the default set of T-Codes.
-  
+- **Theme Selection**: Choose between light, dark, or system theme.
+- **Group Visibility**: Select which transaction groups to display.
+- **Responsive Design**: Optimized for both desktop and mobile devices.
+
 ## Demo
 
 A live demo of the application can be accessed at [tcodes.kernich.de](https://tcodes.kernich.de).
