@@ -569,5 +569,11 @@
 		"title": "Client Copy",
 		"description": "Copy client-specific data and settings",
 		"tags": "GENERAL"
+	},
+	{
+		"tcode": "SLICENSE",
+		"title": "License Administration",
+		"description": "Manage and view system licenses",
+		"tags": "GENERAL"
 	}
 ]
