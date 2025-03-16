@@ -132,6 +132,12 @@
 		"tags": "GENERAL"
 	},
 	{
+		"tcode": "SPRO",
+		"title": "Customizing",
+		"description": "Maintain and configure system settings",
+		"tags": "GENERAL,EWM,ERP"
+	},
+	{
 		"tcode": "SE03",
 		"title": "Transport Organizer Tools",
 		"description": "Advanced transport management to add, unlock or delete objects from transports",
@@ -162,10 +168,22 @@
 		"tags": "ABAP"
 	},
 	{
+		"tcode": "SM12",
+		"title": "Lock Entries",
+		"description": "Monitor and manage lock entries",
+		"tags": "GENERAL"
+	},
+	{
 		"tcode": "SE91",
 		"title": "Message Class Maintenance",
-		"description": "Define and manage system messages",
+		"description": "Define and manage system messages. Can also be used for where-used list of messages",
 		"tags": "ABAP"
+	},
+	{
+		"tcode": "ST03",
+		"title": "Workload Monitor",
+		"description": "Analyze system performance and workload",
+		"tags": "GERNEAL"
 	},
 	{
 		"tcode": "SE93",
@@ -473,5 +491,17 @@
 		"title": "Define Company Code",
 		"description": "Create and maintain company codes",
 		"tags": "FI"
+	},
+	{
+		"tcode": "SCI",
+		"title": "ABAP Code Inspector",
+		"description": "Analyze and optimize ABAP code",
+		"tags": "GENERAL,ABAP"
+	},
+	{
+		"tcode": "SCC1N",
+		"title": "Client Copy",
+		"description": "Copy client-specific data and settings",
+		"tags": "GENERAL"
 	}
 ]

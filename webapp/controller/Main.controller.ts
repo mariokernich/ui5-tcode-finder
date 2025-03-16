@@ -222,17 +222,32 @@ export default class Main extends BaseController {
 	}
 
 	public onAddTransaction(): void {
+		const onSubmit = () => {
+			if (inputCode.getValue().trim().length === 0) {
+				MessageToast.show("Transaction code cannot be empty.");
+				return;
+			}
+			void this.handleAddTransaction(
+				inputCode.getValue(),
+				inputTitle.getValue(),
+				inputDescription.getValue(),
+				dialog
+			);
+		};
 		const inputCode = new Input({
 			width: "100%",
 			placeholder: "Enter transaction...",
+			submit: onSubmit,
 		}).addStyleClass("sapUiSmallMarginBottom");
 		const inputTitle = new Input("titleInput", {
 			width: "100%",
 			placeholder: "Enter title...",
+			submit: onSubmit,
 		}).addStyleClass("sapUiSmallMarginBottom");
 		const inputDescription = new Input("descriptionInput", {
 			width: "100%",
 			placeholder: "Enter description...",
+			submit: onSubmit,
 		});
 		const dialog = new Dialog({
 			title: "Add Transaction",
@@ -249,22 +264,15 @@ export default class Main extends BaseController {
 				}).addStyleClass("sapUiSmallMargin"),
 			],
 			beginButton: new Button({
-				text: "Add",
+				text: "Save",
+				icon: "sap-icon://save",
 				press: () => {
-					if (inputCode.getValue().trim().length === 0) {
-						MessageToast.show("Transaction code cannot be empty.");
-						return;
-					}
-					void this.handleAddTransaction(
-						inputCode.getValue(),
-						inputTitle.getValue(),
-						inputDescription.getValue(),
-						dialog
-					);
+					onSubmit();
 				},
 			}),
 			endButton: new Button({
 				text: "Cancel",
+				icon: "sap-icon://decline",
 				press: () => {
 					dialog.close();
 					dialog.destroy();
