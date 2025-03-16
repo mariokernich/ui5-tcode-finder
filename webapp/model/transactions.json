@@ -12,10 +12,64 @@
 		"tags": "ABAP"
 	},
 	{
+		"tcode": "SE14",
+		"title": "Database Utility",
+		"description": "Activate and adjust database objects",
+		"tags": "ABAP"
+	},
+	{
+		"tcode": "SE15",
+		"title": "Repository Info System",
+		"description": "Search and analyze repository objects",
+		"tags": "ABAP,GENERAL"
+	},
+	{
+		"tcode": "SE16",
+		"title": "Database Table Display",
+		"description": "Display database table contents",
+		"tags": "ABAP,GENERAL"
+	},
+	{
+		"tcode": "SE18",
+		"title": "BAdI-Builder: Definition",
+		"description": "Maintain and BAdI definitions",
+		"tags": "ABAP,GENERAL"
+	},
+	{
+		"tcode": "/IWFND/ROUTING",
+		"title": "SAP-Gateway Routing",
+		"description": "Define and manage routing rules for OData services",
+		"tags": "UI5"
+	},
+	{
+		"tcode": "/IWFND/TRACES",
+		"title": "SAP-Gateway Tracing",
+		"description": "Monitor and analyze OData service calls performance",
+		"tags": "UI5"
+	},
+	{
+		"tcode": "SE19",
+		"title": "BAdI-Builder: Implementation",
+		"description": "Maintain BAdI implementations",
+		"tags": "ABAP,GENERAL"
+	},
+	{
 		"tcode": "SE10",
 		"title": "Transport Organizer",
 		"description": "Create, manage, and release Workbench and Customizing transports",
-		"tags": "ABAP,UI5"
+		"tags": "ABAP,UI5,GENERAL"
+	},
+	{
+		"tcode": "SM50",
+		"title": "Work Process Overview",
+		"description": "Monitor and manage work processes",
+		"tags": "GENERAL"
+	},
+	{
+		"tcode": "SM59",
+		"title": "RFC Destinations",
+		"description": "Maintain and test RFC destinations",
+		"tags": "GENERAL"
 	},
 	{
 		"tcode": "/ui2/flp",
@@ -170,7 +224,7 @@
 	{
 		"tcode": "SM12",
 		"title": "Lock Entries",
-		"description": "Monitor and manage lock entries",
+		"description": "Monitor and manage lock entries, remove locks",
 		"tags": "GENERAL"
 	},
 	{
@@ -208,6 +262,12 @@
 		"title": "Package Builder",
 		"description": "Create and manage ABAP development packages",
 		"tags": "ABAP"
+	},
+	{
+		"tcode": "SM30",
+		"title": "Maintain Table Views",
+		"description": "Maintain table views and customizing data",
+		"tags": "ABAP,GENERAL"
 	},
 	{
 		"tcode": "SE24",
