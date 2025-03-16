@@ -18,13 +18,16 @@ import ListBinding from "sap/ui/model/ListBinding";
 import Util from "../util/Util";
 import Database, { Transaction } from "../util/Database";
 import VBox from "sap/m/VBox";
-import { IconTabBar$SelectEvent } from "sap/m/IconTabBar";
+import IconTabBar, { IconTabBar$SelectEvent } from "sap/m/IconTabBar";
 import DarkModeHelper from "../util/DarkModeHelper";
 import Select from "sap/m/Select";
 import Item from "sap/ui/core/Item";
 import HBox from "sap/m/HBox";
 import DialogManager from "../util/DialogManager";
 import Constants from "../Constants";
+import { IconTab } from "sap/m/library";
+import IconTabFilter from "sap/m/IconTabFilter";
+import Panel from "sap/m/Panel";
 
 type Action = keyof MessageBox["Action"];
 
@@ -64,6 +67,7 @@ export default class Main extends BaseController {
 
 		await this.db.open();
 		await this.refresh();
+		this.updateVisibleGroups();
 	}
 
 	private setDefaultSettings() {
@@ -75,6 +79,13 @@ export default class Main extends BaseController {
 		}
 		if (localStorage.getItem("theme") === null) {
 			localStorage.setItem("theme", "System");
+		}
+		// set visibleGroups to all groups by default
+		if (localStorage.getItem("visibleGroups") === null) {
+			localStorage.setItem(
+				"visibleGroups",
+				JSON.stringify(Constants.TCODE_GROUPS)
+			);
 		}
 	}
 
@@ -357,6 +368,9 @@ export default class Main extends BaseController {
 		const resetSearchAfterCopy =
 			localStorage.getItem("resetSearchAfterCopy") !== "false";
 		const currentTheme = localStorage.getItem("theme") || "System";
+		const visibleGroups: string[] = JSON.parse(
+			localStorage.getItem("visibleGroups") || "[]"
+		) as string[];
 		const checkBoxCopyPrefix = new CheckBox({
 			text: "Copy T-Codes with /n prefix",
 			selected: copyWithPrefix,
@@ -373,24 +387,62 @@ export default class Main extends BaseController {
 				new Item({ key: "System", text: "System" }),
 			],
 		});
+		const groupSelect = new VBox({
+			items: Constants.TCODE_GROUPS.map(
+				(group) =>
+					new CheckBox({
+						text: group,
+						selected: visibleGroups.includes(group),
+						select: (event) => {
+							const selected = event.getParameter("selected");
+							if (selected) {
+								visibleGroups.push(group);
+							} else {
+								const index = visibleGroups.indexOf(group);
+								if (index > -1) {
+									visibleGroups.splice(index, 1);
+								}
+							}
+						},
+					})
+			),
+		});
 
 		const dialog = new Dialog({
 			title: "Settings",
+			contentWidth: "500px",
 			content: [
 				new VBox({
 					items: [
-						checkBoxCopyPrefix,
-						checkBoxResetSearch,
-						new HBox({
-							items: [
-								new Label({ text: "Design:" }).addStyleClass(
-									"sapUiTinyMarginEnd"
-								),
-								themeSelect,
+						new Panel({
+							headerText: "General",
+							expandable: true,
+							expanded: true,
+							content: [
+								new VBox({
+									items: [
+										checkBoxCopyPrefix,
+										checkBoxResetSearch,
+										new HBox({
+											items: [
+												new Label({ text: "Design:" }).addStyleClass(
+													"sapUiTinyMarginEnd"
+												),
+												themeSelect,
+											],
+											alignItems: "Center",
+											alignContent: "Center",
+										}).addStyleClass("sapUiTinyMarginBegin"),
+									],
+								}),
 							],
-							alignItems: "Center",
-							alignContent: "Center",
-						}).addStyleClass("sapUiTinyMarginBegin"),
+						}),
+						new Panel({
+							headerText: "Visible Groups",
+							expandable: true,
+							expanded: false,
+							content: [groupSelect],
+						}),
 					],
 				}).addStyleClass("sapUiSmallMargin"),
 			],
@@ -406,9 +458,11 @@ export default class Main extends BaseController {
 						"resetSearchAfterCopy",
 						checkBoxResetSearch.getSelected().toString()
 					);
+					localStorage.setItem("visibleGroups", JSON.stringify(visibleGroups));
 					const selectedTheme = themeSelect.getSelectedKey();
 					localStorage.setItem("theme", selectedTheme);
 					this.applyTheme(selectedTheme);
+					this.updateVisibleGroups();
 					dialog.close();
 					dialog.destroy();
 					this.focusSearch();
@@ -427,8 +481,19 @@ export default class Main extends BaseController {
 			draggable: true,
 		});
 
-		this.getView().addDependent(dialog);
 		dialog.open();
+	}
+
+	private updateVisibleGroups(): void {
+		const visibleGroups: string[] = JSON.parse(
+			localStorage.getItem("visibleGroups") || "[]"
+		) as string[];
+		const iconTabBar = this.byId("iconTabBar") as IconTabBar;
+		iconTabBar.getItems().forEach((item: IconTab) => {
+			(item as IconTabFilter).setVisible(
+				visibleGroups.includes((item as IconTabFilter).getKey())
+			);
+		});
 	}
 
 	private applyTheme(theme: string): void {

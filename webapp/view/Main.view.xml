@@ -53,6 +53,7 @@
         </customHeader>
         <VBox>
             <IconTabBar
+                id="iconTabBar"
                 select=".onIconTabBarSelect"
                 applyContentPadding="false"
                 headerMode="Inline"
