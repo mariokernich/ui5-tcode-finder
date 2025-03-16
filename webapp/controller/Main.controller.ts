@@ -123,11 +123,10 @@ export default class Main extends BaseController {
 			const model = new JSONModel(transactions);
 			this.getView().setModel(model);
 
-			this.updateTabCounts(transactions);
 			this.filterTable();
 			this.sortTable();
 			this.updateDeleteButtonState();
-			this.updateTabCounts(transactions);
+			void this.updateTabCounts();
 			this.focusSearch();
 		} finally {
 			this.local.busy = false;
@@ -474,6 +473,7 @@ export default class Main extends BaseController {
 					localStorage.setItem("theme", selectedTheme);
 					this.applyTheme(selectedTheme);
 					this.updateVisibleGroups();
+					void this.updateTabCounts();
 					dialog.close();
 					dialog.destroy();
 					this.focusSearch();
@@ -600,7 +600,22 @@ export default class Main extends BaseController {
 		const selectedTag = this.local.selectedTag;
 
 		if (selectedTag === "ALL") {
-			binding.filter([]);
+			const availableTags = JSON.parse(
+				localStorage.getItem("visibleGroups") || "[]"
+			) as string[];
+			const filters: Filter[] = [];
+			availableTags.forEach((tag) => {
+				filters.push(new Filter("tags", FilterOperator.Contains, tag));
+			});
+			binding.filter(
+				[
+					new Filter({
+						filters: filters,
+						and: false,
+					}),
+				],
+				"Application"
+			);
 			return;
 		}
 
@@ -622,9 +637,12 @@ export default class Main extends BaseController {
 		this.focusSearch();
 	}
 
-	private updateTabCounts(transactions: Transaction[]): void {
+	private async updateTabCounts() {
+		const customTransactions = await this.db.getTransactions();
+		const transactions = [...this.standardTransactions, ...customTransactions];
+
 		const counts = {
-			allCount: transactions.length,
+			allCount: 0,
 			generalCount: transactions.filter((t) => t.tags.includes("GENERAL"))
 				.length,
 			ui5Count: transactions.filter((t) => t.tags.includes("UI5")).length,
@@ -634,6 +652,17 @@ export default class Main extends BaseController {
 			fiCount: transactions.filter((t) => t.tags.includes("FI")).length,
 			customCount: transactions.filter((t) => t.tags.includes("CUSTOM")).length,
 		};
+
+		const visibleGroups: string[] = JSON.parse(
+			localStorage.getItem("visibleGroups") || "[]"
+		) as string[];
+
+		transactions.forEach((transaction) => {
+			const groups = transaction.tags.split(",");
+			if (groups.some((group) => visibleGroups.includes(group))) {
+				counts.allCount++;
+			}
+		});
 
 		this.local.allCount = counts.allCount;
 		this.local.generalCount = counts.generalCount;
