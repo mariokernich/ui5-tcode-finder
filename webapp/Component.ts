@@ -1,6 +1,7 @@
 import UIComponent from "sap/ui/core/UIComponent";
 import models from "./model/models";
 import Device from "sap/ui/Device";
+import Localization from "sap/base/i18n/Localization";
 
 /**
  * @namespace de.kernich.tcode
@@ -21,6 +22,9 @@ export default class Component extends UIComponent {
 
 		// create the views based on the url/hash
 		this.getRouter().initialize();
+
+		// set language to english
+		Localization.setLanguage("en");
 	}
 
 	/**
