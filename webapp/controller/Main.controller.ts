@@ -252,7 +252,7 @@ export default class Main extends BaseController {
 				text: "Add",
 				press: () => {
 					if (inputCode.getValue().trim().length === 0) {
-						MessageToast.show("Transaktionscode darf nicht leer sein.");
+						MessageToast.show("Transaction code cannot be empty.");
 						return;
 					}
 					void this.handleAddTransaction(
@@ -284,7 +284,7 @@ export default class Main extends BaseController {
 		dialog: Dialog
 	): Promise<void> {
 		if (await this.transactionExists(tcode)) {
-			MessageToast.show(`Transaktionscode ${tcode} existiert bereits.`);
+			MessageToast.show(`Transaction ${tcode} exists already.`);
 		} else {
 			await this.addTransaction(tcode, title, description);
 			dialog.close();

@@ -122,13 +122,17 @@
                     </Menu>
                 </contextMenu>
                 <columns>
-                    <Column width="200px">
+                    <Column
+                        width="{= ${device>/system/desktop} ? '200px' : 'auto' }"
+                    >
                         <Text text="Transaction code" />
                     </Column>
-                    <Column width="300px">
+                    <Column
+                        width="{= ${device>/system/desktop} ? '300px' : 'auto' }"
+                    >
                         <Text text="Title" />
                     </Column>
-                    <Column>
+                    <Column visible="{= ${device>/system/desktop} }">
                         <Text text="Description" />
                     </Column>
                     <Column hAlign="Right" />
@@ -141,7 +145,10 @@
                         <cells>
                             <Text text="{= ${tcode}.toUpperCase() }" />
                             <Text text="{ path: 'title' }" />
-                            <Text text="{ path: 'description' }" />
+                            <Text
+                                text="{ path: 'description' }"
+                                visible="{= ${device>/system/desktop} }"
+                            />
                             <HBox justifyContent="End">
                                 <Button
                                     icon="{= ${favorite} ? 'sap-icon://favorite' : 'sap-icon://unfavorite' }"
