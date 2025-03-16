@@ -32,13 +32,13 @@
 	{
 		"tcode": "SEGW",
 		"title": "OData V2 Service Builder",
-		"description": "Develop and maintain OData services",
+		"description": "Develop and maintain OData services (ODATA V2)",
 		"tags": "UI5"
 	},
 	{
 		"tcode": "SICF",
 		"title": "HTTP Service Maintenance",
-		"description": "Activate and manage web services",
+		"description": "Activate and manage web services and push channel",
 		"tags": "UI5"
 	},
 	{
@@ -50,7 +50,7 @@
 	{
 		"tcode": "PFCG",
 		"title": "Role Maintenance",
-		"description": "Create, assign, and manage Fiori roles",
+		"description": "Create, assign, and manage roles",
 		"tags": "UI5"
 	},
 	{
@@ -134,7 +134,13 @@
 	{
 		"tcode": "SE03",
 		"title": "Transport Organizer Tools",
-		"description": "Advanced transport management",
+		"description": "Advanced transport management to add, unlock or delete objects from transports",
+		"tags": "GENERAL"
+	},
+	{
+		"tcode": "stms",
+		"title": "Transport Management System",
+		"description": "Manage and monitor transport requests",
 		"tags": "GENERAL"
 	},
 	{
@@ -170,7 +176,7 @@
 	{
 		"tcode": "/iwfnd/virus_scan",
 		"title": "Virus Scan Profile Configuration",
-		"description": "Set up virus scanning for UI5",
+		"description": "Set up virus scanning for UI5 or disable it system-wide",
 		"tags": "UI5"
 	},
 	{

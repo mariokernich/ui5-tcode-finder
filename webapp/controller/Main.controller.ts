@@ -75,7 +75,7 @@ export default class Main extends BaseController {
 			localStorage.setItem("copyWithPrefix", "true");
 		}
 		if (localStorage.getItem("resetSearchAfterCopy") === null) {
-			localStorage.setItem("resetSearchAfterCopy", "true");
+			localStorage.setItem("resetSearchAfterCopy", "false");
 		}
 		if (localStorage.getItem("theme") === null) {
 			localStorage.setItem("theme", "System");
@@ -258,10 +258,9 @@ export default class Main extends BaseController {
 					void this.handleAddTransaction(
 						inputCode.getValue(),
 						inputTitle.getValue(),
-						inputDescription.getValue()
+						inputDescription.getValue(),
+						dialog
 					);
-					dialog.close();
-					dialog.destroy();
 				},
 			}),
 			endButton: new Button({
@@ -281,17 +280,21 @@ export default class Main extends BaseController {
 	private async handleAddTransaction(
 		tcode: string,
 		title: string,
-		description: string
+		description: string,
+		dialog: Dialog
 	): Promise<void> {
 		if (await this.transactionExists(tcode)) {
 			MessageToast.show(`Transaktionscode ${tcode} existiert bereits.`);
 		} else {
 			await this.addTransaction(tcode, title, description);
+			dialog.close();
+			dialog.destroy();
 		}
 	}
 
 	private async transactionExists(tcode: string): Promise<boolean> {
-		const transactions = await this.db.getTransactions();
+		const customTransactions = await this.db.getTransactions();
+		const transactions = [...this.standardTransactions, ...customTransactions];
 		return transactions.some((item) => item.tcode === tcode);
 	}
 
