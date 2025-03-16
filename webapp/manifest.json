@@ -45,14 +45,7 @@
 			"cozy": true
 		},
 
-		"models": {
-			"i18n": {
-				"type": "sap.ui.model.resource.ResourceModel",
-				"settings": {
-					"bundleName": "de.kernich.tcode.i18n.i18n"
-				}
-			}
-		},
+		"models": {},
 
 		"routing": {
 			"config": {

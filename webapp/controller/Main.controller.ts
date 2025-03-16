@@ -61,6 +61,7 @@ export default class Main extends BaseController {
 		customCount: 0,
 		busy: false,
 		shiftPressed: false,
+		dark: false,
 	};
 
 	public onInit() {
@@ -128,8 +129,10 @@ export default class Main extends BaseController {
 			const darkMode = e.matches;
 			if (darkMode) {
 				this.applyTheme("Dark");
+				this.local.dark = true;
 			} else {
 				this.applyTheme("Light");
+				this.local.dark = false;
 			}
 		});
 	}
@@ -578,6 +581,7 @@ export default class Main extends BaseController {
 					this.applyTheme(selectedTheme);
 					this.updateVisibleGroups();
 					void this.updateTabCounts();
+					this.local.dark = selectedTheme === "Dark";
 					dialog.close();
 					dialog.destroy();
 					this.focusSearch();

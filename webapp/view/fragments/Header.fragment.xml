@@ -2,9 +2,39 @@
     xmlns="sap.m"
     xmlns:core="sap.ui.core"
 >
-    <HBox alignItems="Center">
-        <Text
-            text="Search relevant T-Codes for UI5 and Fiori and add your own T-Codes"
+    <OverflowToolbar>
+        <core:Icon
+            src="sap-icon://sap-ui5"
+            size="3rem"
         />
-    </HBox>
+        <Title text="T-Code Quick Finder" />
+        <ToolbarSpacer />
+        <SearchField
+            placeholder="Search for transaction..."
+            liveChange=".onSearch"
+            width="500px"
+            id="IdSearchField"
+        />
+        <ToolbarSpacer />
+        <Button
+            icon="sap-icon://action-settings"
+            press=".onOpenSettings"
+            tooltip="Open settings"
+            text="Settings"
+            type="Transparent"
+        />
+        <ToolbarSeparator />
+        <Button
+            icon="{= ${local>/dark} === true ? 'img/github-brands-w.svg' : 'img/github-brands.svg' }"
+            text="View on GitHub"
+            press=".onOpenGitHub"
+            tooltip="GitHub Repository"
+        />
+        <Button
+            icon="{= ${local>/dark} ? 'img/linkedin-brands-w.svg' : 'img/linkedin-brands.svg' }"
+            text="Mario Kernich"
+            press=".onOpenLinkedIn"
+            tooltip="LinkedIn Profile"
+        />
+    </OverflowToolbar>
 </core:FragmentDefinition>
