@@ -64,12 +64,12 @@ export default class Main extends BaseController {
 	};
 
 	public onInit() {
-		this.db = new Database();
 		void this.handleInit();
-		this.showWelcomeDialog();
 	}
 
 	private async handleInit() {
+		this.db = new Database();
+
 		this.setDefaultSettings();
 		this.setModel(new JSONModel(this.local, true), "local");
 		const model = new JSONModel();
@@ -78,9 +78,12 @@ export default class Main extends BaseController {
 
 		await this.db.open();
 		await this.refresh();
+
 		this.handleTheme();
 		this.updateVisibleGroups();
 		this.handleShift();
+
+		this.showWelcomeDialog();
 	}
 
 	private handleShift() {
