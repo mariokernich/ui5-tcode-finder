@@ -540,12 +540,15 @@ export default class Main extends BaseController {
 							],
 						}),
 						new Panel({
-							headerText: "Copy behavior",
+							headerText: "Transaction click behavior",
 							expandable: true,
 							expanded: false,
 							content: [
 								new VBox({
 									items: [
+										new Label({
+											text: "Choose what happens when you click on a transaction:",
+										}),
 										radioButtonGroup,
 										sapSystemUrlInput,
 										checkBoxResetSearch,
