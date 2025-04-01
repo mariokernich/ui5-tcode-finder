@@ -196,4 +196,31 @@ export default class Database extends UI5Element {
 				reject((event.target as IDBRequest).error);
 		});
 	}
+
+	public async clearTransactions(): Promise<void> {
+		return new Promise((resolve, reject) => {
+			const transactionRequest = this.db.transaction(
+				"transactions",
+				"readwrite"
+			);
+			const store = transactionRequest.objectStore("transactions");
+			const request = store.clear();
+
+			request.onsuccess = () => resolve();
+			request.onerror = (event: Event) =>
+				reject((event.target as IDBRequest).error);
+		});
+	}
+
+	public async clearFavorites(): Promise<void> {
+		return new Promise((resolve, reject) => {
+			const transactionRequest = this.db.transaction("favorites", "readwrite");
+			const store = transactionRequest.objectStore("favorites");
+			const request = store.clear();
+
+			request.onsuccess = () => resolve();
+			request.onerror = (event: Event) =>
+				reject((event.target as IDBRequest).error);
+		});
+	}
 }

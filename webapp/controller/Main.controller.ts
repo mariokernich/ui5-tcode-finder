@@ -30,6 +30,8 @@ import IconTabFilter from "sap/m/IconTabFilter";
 import Panel from "sap/m/Panel";
 import RadioButton from "sap/m/RadioButton";
 import RadioButtonGroup from "sap/m/RadioButtonGroup";
+import FileUploader from "sap/ui/unified/FileUploader";
+import { FileUploader$ChangeEvent } from "sap/ui/unified/FileUploader";
 
 type Action = keyof MessageBox["Action"];
 
@@ -41,6 +43,18 @@ const COPY_OPTIONS = {
 		"Copy T-Code with /n prefix by default and with /o if shift key is pressed",
 	WEB_GUI: "Open in WebGUI",
 };
+
+interface ImportData {
+	settings?: {
+		copyOption?: string;
+		sapSystemUrl?: string;
+		resetSearchAfterCopy?: string;
+		theme?: string;
+		visibleGroups?: string[];
+	};
+	customTransactions?: Transaction[];
+	favoriteTransactions?: Transaction[];
+}
 
 /**
  * @namespace de.kernich.tcode.controller
@@ -137,7 +151,7 @@ export default class Main extends BaseController {
 		});
 	}
 
-	private async refresh(): Promise<void> {
+	private async refresh() {
 		this.local.busy = true;
 		try {
 			const customTransactions = await this.db.getTransactions();
@@ -243,11 +257,15 @@ export default class Main extends BaseController {
 		const table = this.byId("transactionTable") as Table;
 		const binding = table.getBinding("items") as ListBinding;
 		const query = event.getParameter("newValue");
+		const input = event.getSource();
+
+		input.setValue(input.getValue().toUpperCase());
 
 		const filters = [];
 
 		if (query.length === 0) {
 			binding.filter([]);
+			void this.updateTabCounts(query);
 			return;
 		}
 
@@ -262,6 +280,8 @@ export default class Main extends BaseController {
 			}),
 			"Application"
 		);
+
+		void this.updateTabCounts(query);
 	}
 
 	public async onToggleFavorite(event: Button$PressEvent): Promise<void> {
@@ -512,6 +532,53 @@ export default class Main extends BaseController {
 			),
 		});
 
+		const fileUploader = new FileUploader({
+			fileType: ["json"],
+			buttonOnly: true,
+			buttonText: "Import Settings",
+			icon: "sap-icon://upload",
+			uploadOnChange: true,
+			change: (event: FileUploader$ChangeEvent) => {
+				const file = event.getParameter("files")[0];
+				if (file) {
+					const reader = new FileReader();
+					reader.onload = (e) => {
+						try {
+							MessageBox.confirm(
+								"Are you sure you want to import these settings? This will overwrite all your current settings.",
+								{
+									actions: [MessageBox.Action.YES, MessageBox.Action.NO],
+									onClose: (action: Action) => {
+										if (action === MessageBox.Action.YES) {
+											const data = JSON.parse(
+												e.target?.result as string
+											) as ImportData;
+											this.handleImport(data)
+												.then(() => {
+													dialog.close();
+													dialog.destroy();
+													this.focusSearch();
+												})
+												.catch(() => {
+													MessageBox.error("Failed to import settings");
+												});
+										}
+									},
+								}
+							);
+						} catch {
+							MessageBox.error("Invalid JSON file");
+						}
+					};
+					reader.readAsText(file as Blob);
+				}
+			},
+			uploadComplete: () => {
+				// Clear the file input after processing
+				fileUploader.setValue("");
+			},
+		});
+
 		const dialog = new Dialog({
 			title: "Settings",
 			contentWidth: "550px",
@@ -561,6 +628,27 @@ export default class Main extends BaseController {
 							expandable: true,
 							expanded: false,
 							content: [groupSelect],
+						}),
+						new Panel({
+							headerText: "Import/Export",
+							expandable: true,
+							expanded: false,
+							content: [
+								new VBox({
+									items: [
+										new HBox({
+											items: [
+												new Button({
+													text: "Export Settings",
+													icon: "sap-icon://download",
+													press: () => void this.handleExport(),
+												}).addStyleClass("sapUiSmallMarginEnd"),
+												fileUploader,
+											],
+										}),
+									],
+								}),
+							],
 						}),
 					],
 				}).addStyleClass("sapUiSmallMargin"),
@@ -752,27 +840,42 @@ export default class Main extends BaseController {
 		this.focusSearch();
 	}
 
-	private async updateTabCounts() {
+	private async updateTabCounts(searchQuery?: string): Promise<void> {
 		const customTransactions = await this.db.getTransactions();
 		const transactions = [...this.standardTransactions, ...customTransactions];
 
+		const filteredTransactions = searchQuery
+			? transactions.filter(
+					(t) =>
+						t.tcode.toLowerCase().includes(searchQuery.toLowerCase()) ||
+						t.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+						t.description.toLowerCase().includes(searchQuery.toLowerCase())
+			  )
+			: transactions;
+
 		const counts = {
 			allCount: 0,
-			generalCount: transactions.filter((t) => t.tags.includes("GENERAL"))
+			generalCount: filteredTransactions.filter((t) =>
+				t.tags.includes("GENERAL")
+			).length,
+			ui5Count: filteredTransactions.filter((t) => t.tags.includes("UI5"))
 				.length,
-			ui5Count: transactions.filter((t) => t.tags.includes("UI5")).length,
-			abapCount: transactions.filter((t) => t.tags.includes("ABAP")).length,
-			ewmCount: transactions.filter((t) => t.tags.includes("EWM")).length,
-			erpCount: transactions.filter((t) => t.tags.includes("ERP")).length,
-			fiCount: transactions.filter((t) => t.tags.includes("FI")).length,
-			customCount: transactions.filter((t) => t.tags.includes("CUSTOM")).length,
+			abapCount: filteredTransactions.filter((t) => t.tags.includes("ABAP"))
+				.length,
+			ewmCount: filteredTransactions.filter((t) => t.tags.includes("EWM"))
+				.length,
+			erpCount: filteredTransactions.filter((t) => t.tags.includes("ERP"))
+				.length,
+			fiCount: filteredTransactions.filter((t) => t.tags.includes("FI")).length,
+			customCount: filteredTransactions.filter((t) => t.tags.includes("CUSTOM"))
+				.length,
 		};
 
 		const visibleGroups: string[] = JSON.parse(
 			localStorage.getItem("visibleGroups") || "[]"
 		) as string[];
 
-		transactions.forEach((transaction) => {
+		filteredTransactions.forEach((transaction) => {
 			const groups = transaction.tags.split(",");
 			if (groups.some((group) => visibleGroups.includes(group))) {
 				counts.allCount++;
@@ -787,8 +890,6 @@ export default class Main extends BaseController {
 		this.local.erpCount = counts.erpCount;
 		this.local.fiCount = counts.fiCount;
 		this.local.customCount = counts.customCount;
-
-		this.filterTable();
 	}
 
 	public onOpenGitHub() {
@@ -797,5 +898,86 @@ export default class Main extends BaseController {
 
 	public onOpenLinkedIn() {
 		Util.openUrl(Constants.LINKEDIN_URL);
+	}
+
+	private async handleExport(): Promise<void> {
+		try {
+			const settings = {
+				copyOption: localStorage.getItem("copyOption"),
+				sapSystemUrl: localStorage.getItem("sapSystemUrl"),
+				resetSearchAfterCopy: localStorage.getItem("resetSearchAfterCopy"),
+				theme: localStorage.getItem("theme"),
+				visibleGroups: JSON.parse(
+					localStorage.getItem("visibleGroups") || "[]"
+				),
+			};
+
+			const customTransactions = await this.db.getTransactions();
+			const favoriteTransactions = await this.db.getFavoriteTransactions();
+
+			const exportData = {
+				settings,
+				customTransactions,
+				favoriteTransactions,
+			};
+
+			const jsonString = JSON.stringify(exportData, null, 2);
+			const blob = new Blob([jsonString], {
+				type: "application/json",
+			});
+			const url = URL.createObjectURL(blob);
+			const a = document.createElement("a");
+			a.href = url;
+			a.download = "tcode-settings.json";
+			document.body.appendChild(a);
+			a.click();
+			document.body.removeChild(a);
+			URL.revokeObjectURL(url);
+		} catch {
+			MessageBox.error("Failed to export settings");
+		}
+	}
+
+	private async handleImport(data: ImportData) {
+		try {
+			if (data.settings) {
+				Object.entries(data.settings).forEach(([key, value]) => {
+					if (typeof value === "object") {
+						localStorage.setItem(key, JSON.stringify(value));
+					} else if (value !== undefined && value !== null) {
+						localStorage.setItem(key, String(value));
+					}
+				});
+			}
+
+			if (data.customTransactions) {
+				await this.db.clearTransactions();
+				for (const transaction of data.customTransactions) {
+					if (
+						transaction.tcode &&
+						transaction.title &&
+						transaction.description
+					) {
+						await this.db.addTransaction(transaction);
+					}
+				}
+			}
+
+			if (data.favoriteTransactions) {
+				await this.db.clearFavorites();
+				for (const transaction of data.favoriteTransactions) {
+					if (transaction.tcode) {
+						await this.db.addFavorite(transaction.tcode);
+					}
+				}
+			}
+
+			this.applyTheme(data.settings?.theme || "System");
+
+			MessageToast.show("Settings imported successfully");
+			await this.refresh();
+		} catch {
+			MessageBox.error("Failed to import settings");
+		}
 	}
 }

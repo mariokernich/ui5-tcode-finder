@@ -1,5 +1,12 @@
 # Changelog
 
+## Version 1.1.0
+
+- Adding new transactions
+- Searching for transactions now changes the count values of each group
+- Input of search field changed to uppercase style
+- Import and Export function for settings, favorites and custom transactions
+
 ## Version 1.0.0
 
 - **Search Functionality**: Quickly search for T-Codes by their code, title, or description.

@@ -158,7 +158,13 @@
 	{
 		"tcode": "/UI2/FLP_CUS_CONF",
 		"title": "Fiori Launchpad Customization",
-		"description": "Configure and personalize FLP settings",
+		"description": "Activate Fiori Launchpad Plugins and configurations",
+		"tags": "UI5"
+	},
+	{
+		"tcode": "/UI2/FLP_CONF_DEF",
+		"title": "Fiori Launchpad Customization",
+		"description": "Define Fiori Launchpad Plugins and properties",
 		"tags": "UI5"
 	},
 	{
@@ -613,15 +619,33 @@
 		"tags": "GENERAL,ABAP"
 	},
 	{
-		"tcode": "smartforms",
+		"tcode": "SMARTFORMS",
 		"title": "Smart Forms",
 		"description": "Create and manage Smart Forms",
 		"tags": "GENERAL"
 	},
 	{
-		"tcode": "snote",
+		"tcode": "SNOTE",
 		"title": "SAP Note Assistant",
 		"description": "Apply and manage SAP notes",
+		"tags": "GENERAL"
+	},
+	{
+		"tcode": "/IWFND/IWF_ACTIVATE",
+		"title": "SAP Gateway activation",
+		"description": "Activate or deactivate SAP Gateway",
+		"tags": "UI5"
+	},
+	{
+		"tcode": "/UI2/FLPAM",
+		"title": "Fiori Launchpad App Manager",
+		"description": "Manage and configure Fiori Launchpad apps",
+		"tags": "UI5"
+	},
+	{
+		"tcode": "ST06",
+		"title": "System Resource Monitor",
+		"description": "Monitor and analyze system resources like CPU and memory",
 		"tags": "GENERAL"
 	}
 ]
