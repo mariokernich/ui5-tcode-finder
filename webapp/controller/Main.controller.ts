@@ -9,7 +9,6 @@ import Button from "sap/m/Button";
 import Label from "sap/m/Label";
 import Input from "sap/m/Input";
 import MessageBox from "sap/m/MessageBox";
-import CheckBox from "sap/m/CheckBox";
 import { MenuItem$PressEvent } from "sap/m/MenuItem";
 import { Button$PressEvent } from "sap/m/Button";
 import SearchField, { SearchField$LiveChangeEvent } from "sap/m/SearchField";
@@ -20,40 +19,33 @@ import Database, { Transaction } from "../util/Database";
 import VBox from "sap/m/VBox";
 import IconTabBar, { IconTabBar$SelectEvent } from "sap/m/IconTabBar";
 import DarkModeHelper from "../util/DarkModeHelper";
-import Select from "sap/m/Select";
-import Item from "sap/ui/core/Item";
-import HBox from "sap/m/HBox";
 import DialogManager from "../util/DialogManager";
 import Constants from "../Constants";
 import { IconTab } from "sap/m/library";
 import IconTabFilter from "sap/m/IconTabFilter";
-import Panel from "sap/m/Panel";
-import RadioButton from "sap/m/RadioButton";
-import RadioButtonGroup from "sap/m/RadioButtonGroup";
-import FileUploader from "sap/ui/unified/FileUploader";
-import { FileUploader$ChangeEvent } from "sap/ui/unified/FileUploader";
+import SettingsDialog, { ImportData, COPY_OPTIONS } from "./SettingsDialog";
 
 type Action = keyof MessageBox["Action"];
 
-const COPY_OPTIONS = {
-	JUST_COPY: "Just copy T-Code",
-	N_PREFIX: "Copy T-Code with /n prefix",
-	O_PREFIX: "Copy T-Code with /o prefix",
-	DEFAULT:
-		"Copy T-Code with /n prefix by default and with /o if shift key is pressed",
-	WEB_GUI: "Open in WebGUI",
-};
+interface LocalModel {
+	selectedTag: string;
+	allCount: number;
+	generalCount: number;
+	ui5Count: number;
+	abapCount: number;
+	ewmCount: number;
+	erpCount: number;
+	fiCount: number;
+	customCount: number;
+	busy: boolean;
+	shiftPressed: boolean;
+	dark: boolean;
+}
 
-interface ImportData {
-	settings?: {
-		copyOption?: string;
-		sapSystemUrl?: string;
-		resetSearchAfterCopy?: string;
-		theme?: string;
-		visibleGroups?: string[];
+interface TableItem {
+	getBindingContext(): {
+		getProperty(key: string): unknown;
 	};
-	customTransactions?: Transaction[];
-	favoriteTransactions?: Transaction[];
 }
 
 /**
@@ -62,31 +54,31 @@ interface ImportData {
 export default class Main extends BaseController {
 	private db: Database;
 	private standardTransactions: Transaction[];
+	private local: LocalModel;
 
-	private local = {
-		selectedTag: "ALL",
-		allCount: 0,
-		generalCount: 0,
-		ui5Count: 0,
-		abapCount: 0,
-		ewmCount: 0,
-		erpCount: 0,
-		fiCount: 0,
-		customCount: 0,
-		busy: false,
-		shiftPressed: false,
-		dark: false,
-	};
-
-	public onInit() {
+	public onInit(): void {
+		this.local = {
+			selectedTag: "ALL",
+			allCount: 0,
+			generalCount: 0,
+			ui5Count: 0,
+			abapCount: 0,
+			ewmCount: 0,
+			erpCount: 0,
+			fiCount: 0,
+			customCount: 0,
+			busy: false,
+			shiftPressed: false,
+			dark: false,
+		};
 		void this.handleInit();
 	}
 
-	private async handleInit() {
+	private async handleInit(): Promise<void> {
 		this.db = new Database();
-
 		this.setDefaultSettings();
 		this.setModel(new JSONModel(this.local, true), "local");
+
 		const model = new JSONModel();
 		await model.loadData("model/transactions.json");
 		this.standardTransactions = model.getData() as Transaction[];
@@ -97,11 +89,10 @@ export default class Main extends BaseController {
 		this.handleTheme();
 		this.updateVisibleGroups();
 		this.handleShift();
-
 		this.showWelcomeDialog();
 	}
 
-	private handleShift() {
+	private handleShift(): void {
 		document.addEventListener("keydown", (event) => {
 			if (event.shiftKey) {
 				this.local.shiftPressed = true;
@@ -115,43 +106,34 @@ export default class Main extends BaseController {
 		});
 	}
 
-	private setDefaultSettings() {
-		if (localStorage.getItem("copyWithPrefix") === null) {
-			localStorage.setItem("copyWithPrefix", "true");
-		}
-		if (localStorage.getItem("resetSearchAfterCopy") === null) {
-			localStorage.setItem("resetSearchAfterCopy", "false");
-		}
-		if (localStorage.getItem("theme") === null) {
-			localStorage.setItem("theme", "System");
-		}
-		// set visibleGroups to all groups by default
-		if (localStorage.getItem("visibleGroups") === null) {
-			localStorage.setItem(
-				"visibleGroups",
-				JSON.stringify(Constants.TCODE_GROUPS)
-			);
-		}
+	private setDefaultSettings(): void {
+		const defaultSettings = {
+			copyWithPrefix: "true",
+			resetSearchAfterCopy: "false",
+			theme: "System",
+			visibleGroups: JSON.stringify(Constants.TCODE_GROUPS),
+		};
+
+		Object.entries(defaultSettings).forEach(([key, value]) => {
+			if (localStorage.getItem(key) === null) {
+				localStorage.setItem(key, value);
+			}
+		});
 	}
 
-	private handleTheme() {
+	private handleTheme(): void {
 		const theme = localStorage.getItem("theme") || "System";
 		this.applyTheme(theme);
 
 		const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
 		mediaQuery.addEventListener("change", (e) => {
 			const darkMode = e.matches;
-			if (darkMode) {
-				this.applyTheme("Dark");
-				this.local.dark = true;
-			} else {
-				this.applyTheme("Light");
-				this.local.dark = false;
-			}
+			this.applyTheme(darkMode ? "Dark" : "Light");
+			this.local.dark = darkMode;
 		});
 	}
 
-	private async refresh() {
+	private async refresh(): Promise<void> {
 		this.local.busy = true;
 		try {
 			const customTransactions = await this.db.getTransactions();
@@ -180,28 +162,24 @@ export default class Main extends BaseController {
 		}
 	}
 
-	private focusSearch() {
+	private focusSearch(): void {
 		this.getView().byId("IdSearchField").focus();
 	}
 
 	private showWelcomeDialog(): void {
-		const doNotShowAgain = localStorage.getItem("doNotShowWelcomeDialog");
-		if (doNotShowAgain === "true") {
-			return;
+		if (localStorage.getItem("doNotShowWelcomeDialog") !== "true") {
+			DialogManager.showWelcome();
 		}
-
-		DialogManager.showWelcome();
 	}
 
 	public async onRowPress(event: Button$PressEvent): Promise<void> {
 		const source = event.getSource();
 		const context = source.getBindingContext();
 		const tcode = context.getProperty("tcode") as string;
-
 		await this.handleCopy(tcode);
 	}
 
-	private async handleCopy(tcode: string) {
+	private async handleCopy(tcode: string): Promise<void> {
 		const copyOption =
 			localStorage.getItem("copyOption") || COPY_OPTIONS.DEFAULT;
 		let sapSystemUrl = localStorage.getItem("sapSystemUrl") || "";
@@ -210,27 +188,20 @@ export default class Main extends BaseController {
 		switch (copyOption) {
 			case COPY_OPTIONS.O_PREFIX:
 				textToCopy = `/o${tcode}`;
-				MessageToast.show(`Transaction ${tcode} copied.`);
 				break;
 			case COPY_OPTIONS.DEFAULT:
-				if (this.local.shiftPressed) {
-					textToCopy = `/o${tcode}`;
-				} else {
-					textToCopy = `/n${tcode}`;
-				}
-				MessageToast.show(`Transaction ${tcode} copied.`);
+				textToCopy = this.local.shiftPressed ? `/o${tcode}` : `/n${tcode}`;
 				break;
 			case COPY_OPTIONS.WEB_GUI:
-				if (sapSystemUrl.length === 0) {
+				if (!sapSystemUrl) {
 					MessageToast.show("Please set SAP System URL in settings.");
 					return;
 				}
-				if (sapSystemUrl.endsWith("/")) {
-					sapSystemUrl = sapSystemUrl.slice(0, -1);
-				}
-				tcode = encodeURIComponent(tcode);
+				sapSystemUrl = sapSystemUrl.replace(/\/$/, "");
 				window.open(
-					`${sapSystemUrl}/sap/bc/gui/sap/its/webgui?~transaction=${tcode}`,
+					`${sapSystemUrl}/sap/bc/gui/sap/its/webgui?~transaction=${encodeURIComponent(
+						tcode
+					)}`,
 					"_blank"
 				);
 				return;
@@ -238,13 +209,14 @@ export default class Main extends BaseController {
 
 		await Util.copy2Clipboard(textToCopy);
 		MessageToast.show(`Transaction ${tcode} copied.`);
+
 		if (localStorage.getItem("resetSearchAfterCopy") === "true") {
 			this.resetSearch();
 		}
 		this.focusSearch();
 	}
 
-	private resetSearch() {
+	private resetSearch(): void {
 		const searchField = this.getView().byId("IdSearchField") as SearchField;
 		searchField.setValue("");
 		const table = this.byId("transactionTable") as Table;
@@ -261,21 +233,21 @@ export default class Main extends BaseController {
 
 		input.setValue(input.getValue().toUpperCase());
 
-		const filters = [];
-
 		if (query.length === 0) {
 			binding.filter([]);
-			void this.updateTabCounts(query);
+			void this.updateTabCounts();
 			return;
 		}
 
-		filters.push(new Filter("tcode", FilterOperator.Contains, query));
-		filters.push(new Filter("title", FilterOperator.Contains, query));
-		filters.push(new Filter("description", FilterOperator.Contains, query));
+		const filters = [
+			new Filter("tcode", FilterOperator.Contains, query),
+			new Filter("title", FilterOperator.Contains, query),
+			new Filter("description", FilterOperator.Contains, query),
+		];
 
 		binding.filter(
 			new Filter({
-				filters: filters,
+				filters,
 				and: false,
 			}),
 			"Application"
@@ -298,7 +270,7 @@ export default class Main extends BaseController {
 		await this.refresh();
 	}
 
-	private sortTable() {
+	private sortTable(): void {
 		const table = this.byId("transactionTable") as Table;
 		const binding = table.getBinding("items") as ListBinding;
 		const sorters = [new Sorter("favorite", true), new Sorter("tcode", false)];
@@ -306,33 +278,54 @@ export default class Main extends BaseController {
 	}
 
 	public onAddTransaction(): void {
-		const onSubmit = () => {
-			if (inputCode.getValue().trim().length === 0) {
-				MessageToast.show("Transaction code cannot be empty.");
-				return;
-			}
-			void this.handleAddTransaction(
-				inputCode.getValue(),
-				inputTitle.getValue(),
-				inputDescription.getValue(),
-				dialog
-			);
-		};
+		const dialog = this.createAddTransactionDialog();
+		this.getView().addDependent(dialog);
+		dialog.open();
+	}
+
+	private createAddTransactionDialog(): Dialog {
 		const inputCode = new Input({
+			id: "tcodeInput",
 			width: "100%",
 			placeholder: "Enter transaction...",
-			submit: onSubmit,
+			submit: () => {
+				void this.handleAddTransactionSubmit(
+					inputCode,
+					inputTitle,
+					inputDescription,
+					dialog
+				);
+			},
 		}).addStyleClass("sapUiSmallMarginBottom");
-		const inputTitle = new Input("titleInput", {
+
+		const inputTitle = new Input({
+			id: "titleInput",
 			width: "100%",
 			placeholder: "Enter title...",
-			submit: onSubmit,
+			submit: () => {
+				void this.handleAddTransactionSubmit(
+					inputCode,
+					inputTitle,
+					inputDescription,
+					dialog
+				);
+			},
 		}).addStyleClass("sapUiSmallMarginBottom");
-		const inputDescription = new Input("descriptionInput", {
+
+		const inputDescription = new Input({
+			id: "descriptionInput",
 			width: "100%",
 			placeholder: "Enter description...",
-			submit: onSubmit,
+			submit: () => {
+				void this.handleAddTransactionSubmit(
+					inputCode,
+					inputTitle,
+					inputDescription,
+					dialog
+				);
+			},
 		});
+
 		const dialog = new Dialog({
 			title: "Add Transaction",
 			content: [
@@ -351,7 +344,12 @@ export default class Main extends BaseController {
 				text: "Save",
 				icon: "sap-icon://save",
 				press: () => {
-					onSubmit();
+					void this.handleAddTransactionSubmit(
+						inputCode,
+						inputTitle,
+						inputDescription,
+						dialog
+					);
 				},
 			}),
 			endButton: new Button({
@@ -364,24 +362,37 @@ export default class Main extends BaseController {
 			}),
 		});
 
-		this.getView().addDependent(dialog);
-		dialog.open();
-		inputCode.focus();
+		dialog.attachAfterOpen(() => {
+			inputCode.focus();
+		});
+
+		return dialog;
 	}
 
-	private async handleAddTransaction(
-		tcode: string,
-		title: string,
-		description: string,
+	private async handleAddTransactionSubmit(
+		inputCode: Input,
+		inputTitle: Input,
+		inputDescription: Input,
 		dialog: Dialog
 	): Promise<void> {
+		const tcode = inputCode.getValue().trim();
+		if (!tcode) {
+			MessageToast.show("Transaction code cannot be empty.");
+			return;
+		}
+
 		if (await this.transactionExists(tcode)) {
 			MessageToast.show(`Transaction ${tcode} exists already.`);
-		} else {
-			await this.addTransaction(tcode, title, description);
-			dialog.close();
-			dialog.destroy();
+			return;
 		}
+
+		await this.addTransaction(
+			tcode,
+			inputTitle.getValue(),
+			inputDescription.getValue()
+		);
+		dialog.close();
+		dialog.destroy();
 	}
 
 	private async transactionExists(tcode: string): Promise<boolean> {
@@ -415,16 +426,22 @@ export default class Main extends BaseController {
 				actions: [MessageBox.Action.YES, MessageBox.Action.NO],
 				onClose: async (action: Action) => {
 					if (action === MessageBox.Action.YES) {
-						for (const item of selectedItems) {
-							const context = item.getBindingContext();
-							const tcode = context.getProperty("tcode") as string;
-							await this.db.deleteTransaction(tcode);
-						}
-						await this.refresh();
+						await this.deleteSelectedTransactions(selectedItems);
 					}
 				},
 			}
 		);
+	}
+
+	private async deleteSelectedTransactions(
+		selectedItems: TableItem[]
+	): Promise<void> {
+		for (const item of selectedItems) {
+			const context = item.getBindingContext();
+			const tcode = context.getProperty("tcode") as string;
+			await this.db.deleteTransaction(tcode);
+		}
+		await this.refresh();
 	}
 
 	private updateDeleteButtonState(): void {
@@ -459,239 +476,38 @@ export default class Main extends BaseController {
 	}
 
 	public onOpenSettings(): void {
-		const copyOption =
-			localStorage.getItem("copyOption") || COPY_OPTIONS.DEFAULT;
-		const sapSystemUrl = localStorage.getItem("sapSystemUrl") || "";
-		const resetSearchAfterCopy =
-			localStorage.getItem("resetSearchAfterCopy") !== "false";
-		const currentTheme = localStorage.getItem("theme") || "System";
-		const visibleGroups: string[] = JSON.parse(
-			localStorage.getItem("visibleGroups") || "[]"
-		) as string[];
-		const radioButtonGroup = new RadioButtonGroup({
-			selectedIndex: [
-				COPY_OPTIONS.JUST_COPY,
-				COPY_OPTIONS.DEFAULT,
-				COPY_OPTIONS.O_PREFIX,
-				COPY_OPTIONS.WEB_GUI,
-			].indexOf(copyOption),
-			buttons: [
-				new RadioButton({ text: COPY_OPTIONS.JUST_COPY }),
-				new RadioButton({ text: COPY_OPTIONS.DEFAULT }),
-				new RadioButton({ text: COPY_OPTIONS.O_PREFIX }),
-				new RadioButton({ text: COPY_OPTIONS.WEB_GUI }),
-			],
-			select: (event) => {
-				const selectedIndex = event.getParameter("selectedIndex");
-				const buttons = radioButtonGroup.getButtons();
-				const selectedText = buttons[selectedIndex].getText();
-				if (selectedText === COPY_OPTIONS.WEB_GUI) {
-					sapSystemUrlInput.setVisible(true);
-				} else {
-					sapSystemUrlInput.setVisible(false);
-				}
-			},
+		const settingsDialog = new SettingsDialog({
+			onSave: (settings) => this.handleSettingsSave(settings),
+			onImport: (data) => this.handleImport(data),
+			onExport: () => this.handleExport(),
 		});
-		const sapSystemUrlInput = new Input({
-			width: "100%",
-			placeholder:
-				"Enter base SAP System URL like https://example.com:50000...",
-			value: sapSystemUrl,
-			visible: copyOption === COPY_OPTIONS.WEB_GUI,
-		});
-		const checkBoxResetSearch = new CheckBox({
-			text: "Reset search after copy",
-			selected: resetSearchAfterCopy,
-		}).addStyleClass("sapUiSmallMarginTop");
-		const themeSelect = new Select({
-			selectedKey: currentTheme,
-			items: [
-				new Item({ key: "Light", text: "Light" }),
-				new Item({ key: "Dark", text: "Dark" }),
-				new Item({ key: "System", text: "System" }),
-			],
-		});
-		const groupSelect = new VBox({
-			items: Constants.TCODE_GROUPS.map(
-				(group) =>
-					new CheckBox({
-						text: group,
-						selected: visibleGroups.includes(group),
-						select: (event) => {
-							const selected = event.getParameter("selected");
-							if (selected) {
-								visibleGroups.push(group);
-							} else {
-								const index = visibleGroups.indexOf(group);
-								if (index > -1) {
-									visibleGroups.splice(index, 1);
-								}
-							}
-						},
-					})
-			),
-		});
+		settingsDialog.open();
+	}
 
-		const fileUploader = new FileUploader({
-			fileType: ["json"],
-			buttonOnly: true,
-			buttonText: "Import Settings",
-			icon: "sap-icon://upload",
-			uploadOnChange: true,
-			change: (event: FileUploader$ChangeEvent) => {
-				const file = event.getParameter("files")[0];
-				if (file) {
-					const reader = new FileReader();
-					reader.onload = (e) => {
-						try {
-							MessageBox.confirm(
-								"Are you sure you want to import these settings? This will overwrite all your current settings.",
-								{
-									actions: [MessageBox.Action.YES, MessageBox.Action.NO],
-									onClose: (action: Action) => {
-										if (action === MessageBox.Action.YES) {
-											const data = JSON.parse(
-												e.target?.result as string
-											) as ImportData;
-											this.handleImport(data)
-												.then(() => {
-													dialog.close();
-													dialog.destroy();
-													this.focusSearch();
-												})
-												.catch(() => {
-													MessageBox.error("Failed to import settings");
-												});
-										}
-									},
-								}
-							);
-						} catch {
-							MessageBox.error("Invalid JSON file");
-						}
-					};
-					reader.readAsText(file as Blob);
-				}
-			},
-			uploadComplete: () => {
-				// Clear the file input after processing
-				fileUploader.setValue("");
-			},
-		});
+	private handleSettingsSave(settings: {
+		copyOption: string;
+		sapSystemUrl: string;
+		resetSearchAfterCopy: boolean;
+		visibleGroups: string[];
+		theme: string;
+	}): void {
+		localStorage.setItem("copyOption", settings.copyOption);
+		localStorage.setItem("sapSystemUrl", settings.sapSystemUrl);
+		localStorage.setItem(
+			"resetSearchAfterCopy",
+			settings.resetSearchAfterCopy.toString()
+		);
+		localStorage.setItem(
+			"visibleGroups",
+			JSON.stringify(settings.visibleGroups)
+		);
+		localStorage.setItem("theme", settings.theme);
 
-		const dialog = new Dialog({
-			title: "Settings",
-			contentWidth: "550px",
-			content: [
-				new VBox({
-					items: [
-						new Panel({
-							headerText: "General",
-							expandable: true,
-							expanded: true,
-							content: [
-								new VBox({
-									items: [
-										new HBox({
-											items: [
-												new Label({ text: "Design:" }).addStyleClass(
-													"sapUiTinyMarginEnd"
-												),
-												themeSelect,
-											],
-											alignItems: "Center",
-											alignContent: "Center",
-										}).addStyleClass("sapUiTinyMarginBegin"),
-									],
-								}),
-							],
-						}),
-						new Panel({
-							headerText: "Transaction click behavior",
-							expandable: true,
-							expanded: false,
-							content: [
-								new VBox({
-									items: [
-										new Label({
-											text: "Choose what happens when you click on a transaction:",
-										}),
-										radioButtonGroup,
-										sapSystemUrlInput,
-										checkBoxResetSearch,
-									],
-								}),
-							],
-						}),
-						new Panel({
-							headerText: "Visible Groups",
-							expandable: true,
-							expanded: false,
-							content: [groupSelect],
-						}),
-						new Panel({
-							headerText: "Import/Export",
-							expandable: true,
-							expanded: false,
-							content: [
-								new VBox({
-									items: [
-										new HBox({
-											items: [
-												new Button({
-													text: "Export Settings",
-													icon: "sap-icon://download",
-													press: () => void this.handleExport(),
-												}).addStyleClass("sapUiSmallMarginEnd"),
-												fileUploader,
-											],
-										}),
-									],
-								}),
-							],
-						}),
-					],
-				}).addStyleClass("sapUiSmallMargin"),
-			],
-			beginButton: new Button({
-				text: "Save",
-				icon: "sap-icon://save",
-				press: () => {
-					const selectedIndex = radioButtonGroup.getSelectedIndex();
-					const buttons = radioButtonGroup.getButtons();
-					const selectedText = buttons[selectedIndex].getText();
-					localStorage.setItem("copyOption", selectedText);
-					localStorage.setItem("sapSystemUrl", sapSystemUrlInput.getValue());
-					localStorage.setItem(
-						"resetSearchAfterCopy",
-						checkBoxResetSearch.getSelected().toString()
-					);
-					localStorage.setItem("visibleGroups", JSON.stringify(visibleGroups));
-					const selectedTheme = themeSelect.getSelectedKey();
-					localStorage.setItem("theme", selectedTheme);
-					this.applyTheme(selectedTheme);
-					this.updateVisibleGroups();
-					void this.updateTabCounts();
-					this.local.dark = selectedTheme === "Dark";
-					dialog.close();
-					dialog.destroy();
-					this.focusSearch();
-					MessageToast.show("Settings saved.");
-				},
-			}),
-			endButton: new Button({
-				text: "Cancel",
-				icon: "sap-icon://decline",
-				press: () => {
-					dialog.close();
-					dialog.destroy();
-					this.focusSearch();
-				},
-			}),
-			draggable: true,
-		});
-
-		dialog.open();
+		this.applyTheme(settings.theme);
+		this.updateVisibleGroups();
+		void this.updateTabCounts();
+		this.local.dark = settings.theme === "Dark";
+		this.focusSearch();
 	}
 
 	private updateVisibleGroups(): void {
@@ -742,6 +558,16 @@ export default class Main extends BaseController {
 		title: string,
 		description: string
 	): void {
+		const dialog = this.createEditTransactionDialog(tcode, title, description);
+		this.getView().addDependent(dialog);
+		dialog.open();
+	}
+
+	private createEditTransactionDialog(
+		tcode: string,
+		title: string,
+		description: string
+	): Dialog {
 		const inputTitle = new Input({
 			width: "100%",
 			value: title,
@@ -750,6 +576,7 @@ export default class Main extends BaseController {
 			width: "100%",
 			value: description,
 		});
+
 		const dialog = new Dialog({
 			title: `Edit Transaction ${tcode}`,
 			content: [
@@ -784,8 +611,7 @@ export default class Main extends BaseController {
 			draggable: true,
 		});
 
-		this.getView().addDependent(dialog);
-		dialog.open();
+		return dialog;
 	}
 
 	private async handleUpdateTransaction(
@@ -797,7 +623,7 @@ export default class Main extends BaseController {
 		await this.refresh();
 	}
 
-	private filterTable() {
+	private filterTable(): void {
 		const table = this.byId("transactionTable") as Table;
 		const binding = table.getBinding("items") as ListBinding;
 		const selectedTag = this.local.selectedTag;
@@ -813,7 +639,7 @@ export default class Main extends BaseController {
 			binding.filter(
 				[
 					new Filter({
-						filters: filters,
+						filters,
 						and: false,
 					}),
 				],
@@ -830,12 +656,7 @@ export default class Main extends BaseController {
 		const selectedKey = event.getSource().getSelectedKey();
 		const table = this.byId("transactionTable") as Table;
 
-		if (selectedKey === "CUSTOM") {
-			table.setMode("MultiSelect");
-		} else {
-			table.setMode("None");
-		}
-
+		table.setMode(selectedKey === "CUSTOM" ? "MultiSelect" : "None");
 		this.filterTable();
 		this.focusSearch();
 	}
@@ -882,21 +703,14 @@ export default class Main extends BaseController {
 			}
 		});
 
-		this.local.allCount = counts.allCount;
-		this.local.generalCount = counts.generalCount;
-		this.local.ui5Count = counts.ui5Count;
-		this.local.abapCount = counts.abapCount;
-		this.local.ewmCount = counts.ewmCount;
-		this.local.erpCount = counts.erpCount;
-		this.local.fiCount = counts.fiCount;
-		this.local.customCount = counts.customCount;
+		Object.assign(this.local, counts);
 	}
 
-	public onOpenGitHub() {
+	public onOpenGitHub(): void {
 		Util.openUrl(Constants.GITHUB_URL);
 	}
 
-	public onOpenLinkedIn() {
+	public onOpenLinkedIn(): void {
 		Util.openUrl(Constants.LINKEDIN_URL);
 	}
 
@@ -909,7 +723,7 @@ export default class Main extends BaseController {
 				theme: localStorage.getItem("theme"),
 				visibleGroups: JSON.parse(
 					localStorage.getItem("visibleGroups") || "[]"
-				),
+				) as string[],
 			};
 
 			const customTransactions = await this.db.getTransactions();
@@ -922,9 +736,7 @@ export default class Main extends BaseController {
 			};
 
 			const jsonString = JSON.stringify(exportData, null, 2);
-			const blob = new Blob([jsonString], {
-				type: "application/json",
-			});
+			const blob = new Blob([jsonString], { type: "application/json" });
 			const url = URL.createObjectURL(blob);
 			const a = document.createElement("a");
 			a.href = url;
@@ -933,12 +745,18 @@ export default class Main extends BaseController {
 			a.click();
 			document.body.removeChild(a);
 			URL.revokeObjectURL(url);
-		} catch {
-			MessageBox.error("Failed to export settings");
+
+			MessageToast.show("Settings exported successfully");
+		} catch (error) {
+			MessageBox.error(
+				`Failed to export settings: ${
+					error instanceof Error ? error.message : "Unknown error occurred"
+				}`
+			);
 		}
 	}
 
-	private async handleImport(data: ImportData) {
+	private async handleImport(data: ImportData): Promise<void> {
 		try {
 			if (data.settings) {
 				Object.entries(data.settings).forEach(([key, value]) => {
@@ -953,31 +771,23 @@ export default class Main extends BaseController {
 			if (data.customTransactions) {
 				await this.db.clearTransactions();
 				for (const transaction of data.customTransactions) {
-					if (
-						transaction.tcode &&
-						transaction.title &&
-						transaction.description
-					) {
-						await this.db.addTransaction(transaction);
-					}
+					await this.db.addTransaction(transaction);
 				}
 			}
 
 			if (data.favoriteTransactions) {
 				await this.db.clearFavorites();
 				for (const transaction of data.favoriteTransactions) {
-					if (transaction.tcode) {
-						await this.db.addFavorite(transaction.tcode);
-					}
+					await this.db.addFavorite(transaction.tcode);
 				}
 			}
 
 			this.applyTheme(data.settings?.theme || "System");
-
-			MessageToast.show("Settings imported successfully");
 			await this.refresh();
-		} catch {
-			MessageBox.error("Failed to import settings");
+		} catch (error) {
+			throw new Error(
+				error instanceof Error ? error.message : "Unknown error occurred"
+			);
 		}
 	}
 }
