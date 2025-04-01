@@ -74,7 +74,7 @@ export default class Main extends BaseController {
 		void this.handleInit();
 	}
 
-	private async handleInit(): Promise<void> {
+	private async handleInit() {
 		this.db = new Database();
 		this.setDefaultSettings();
 		this.setModel(new JSONModel(this.local, true), "local");
@@ -133,7 +133,7 @@ export default class Main extends BaseController {
 		});
 	}
 
-	private async refresh(): Promise<void> {
+	private async refresh() {
 		this.local.busy = true;
 		try {
 			const customTransactions = await this.db.getTransactions();
@@ -172,14 +172,14 @@ export default class Main extends BaseController {
 		}
 	}
 
-	public async onRowPress(event: Button$PressEvent): Promise<void> {
+	public async onRowPress(event: Button$PressEvent) {
 		const source = event.getSource();
 		const context = source.getBindingContext();
 		const tcode = context.getProperty("tcode") as string;
 		await this.handleCopy(tcode);
 	}
 
-	private async handleCopy(tcode: string): Promise<void> {
+	private async handleCopy(tcode: string) {
 		const copyOption =
 			localStorage.getItem("copyOption") || COPY_OPTIONS.DEFAULT;
 		let sapSystemUrl = localStorage.getItem("sapSystemUrl") || "";
@@ -256,7 +256,7 @@ export default class Main extends BaseController {
 		void this.updateTabCounts(query);
 	}
 
-	public async onToggleFavorite(event: Button$PressEvent): Promise<void> {
+	public async onToggleFavorite(event: Button$PressEvent) {
 		const source = event.getSource();
 		const context = source.getBindingContext();
 		const tcode = context.getProperty("tcode") as string;
@@ -374,7 +374,7 @@ export default class Main extends BaseController {
 		inputTitle: Input,
 		inputDescription: Input,
 		dialog: Dialog
-	): Promise<void> {
+	) {
 		const tcode = inputCode.getValue().trim();
 		if (!tcode) {
 			MessageToast.show("Transaction code cannot be empty.");
@@ -405,7 +405,7 @@ export default class Main extends BaseController {
 		tcode: string,
 		title: string,
 		description: string
-	): Promise<void> {
+	) {
 		const newTransaction = { tcode, title, description, tags: "CUSTOM" };
 		await this.db.addTransaction(newTransaction);
 		await this.refresh();
@@ -433,9 +433,7 @@ export default class Main extends BaseController {
 		);
 	}
 
-	private async deleteSelectedTransactions(
-		selectedItems: TableItem[]
-	): Promise<void> {
+	private async deleteSelectedTransactions(selectedItems: TableItem[]) {
 		for (const item of selectedItems) {
 			const context = item.getBindingContext();
 			const tcode = context.getProperty("tcode") as string;
@@ -618,7 +616,7 @@ export default class Main extends BaseController {
 		tcode: string,
 		title: string,
 		description: string
-	): Promise<void> {
+	) {
 		await this.db.updateTransaction(tcode, title, description);
 		await this.refresh();
 	}
@@ -661,7 +659,7 @@ export default class Main extends BaseController {
 		this.focusSearch();
 	}
 
-	private async updateTabCounts(searchQuery?: string): Promise<void> {
+	private async updateTabCounts(searchQuery?: string) {
 		const customTransactions = await this.db.getTransactions();
 		const transactions = [...this.standardTransactions, ...customTransactions];
 
@@ -714,7 +712,7 @@ export default class Main extends BaseController {
 		Util.openUrl(Constants.LINKEDIN_URL);
 	}
 
-	private async handleExport(): Promise<void> {
+	private async handleExport() {
 		try {
 			const settings = {
 				copyOption: localStorage.getItem("copyOption"),
@@ -756,7 +754,7 @@ export default class Main extends BaseController {
 		}
 	}
 
-	private async handleImport(data: ImportData): Promise<void> {
+	private async handleImport(data: ImportData) {
 		try {
 			if (data.settings) {
 				Object.entries(data.settings).forEach(([key, value]) => {
