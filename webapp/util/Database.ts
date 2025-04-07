@@ -15,7 +15,7 @@ export default class Database extends UI5Element {
 	private db: IDBDatabase | null = null;
 
 	public async open() {
-		return new Promise((resolve, reject) => {
+		return new Promise<void>((resolve, reject) => {
 			const request = indexedDB.open("TCodeDB_2", 1);
 
 			request.onupgradeneeded = (event: IDBVersionChangeEvent) => {
@@ -46,7 +46,7 @@ export default class Database extends UI5Element {
 	}
 
 	public async addTransaction(transaction: Transaction) {
-		return new Promise((resolve, reject) => {
+		return new Promise<void>((resolve, reject) => {
 			const transactionRequest = this.db.transaction(
 				"transactions",
 				"readwrite"
@@ -77,7 +77,7 @@ export default class Database extends UI5Element {
 	}
 
 	public async updateFavorite(tcode: string) {
-		return new Promise((resolve, reject) => {
+		return new Promise<void>((resolve, reject) => {
 			const transactionRequest = this.db.transaction(
 				"transactions",
 				"readwrite"
@@ -103,7 +103,7 @@ export default class Database extends UI5Element {
 		title: string,
 		description: string
 	) {
-		return new Promise((resolve, reject) => {
+		return new Promise<void>((resolve, reject) => {
 			const transactionRequest = this.db.transaction(
 				"transactions",
 				"readwrite"
@@ -127,7 +127,7 @@ export default class Database extends UI5Element {
 	}
 
 	public async deleteTransaction(tcode: string) {
-		return new Promise((resolve, reject) => {
+		return new Promise<void>((resolve, reject) => {
 			const transactionRequest = this.db.transaction(
 				"transactions",
 				"readwrite"
@@ -142,7 +142,7 @@ export default class Database extends UI5Element {
 	}
 
 	public async resetFactoryDefaults(defaults: Transaction[]) {
-		return new Promise((resolve, reject) => {
+		return new Promise<void>((resolve, reject) => {
 			const transactionRequest = this.db.transaction(
 				"transactions",
 				"readwrite"
@@ -161,7 +161,7 @@ export default class Database extends UI5Element {
 	}
 
 	public async addFavorite(tcode: string) {
-		return new Promise((resolve, reject) => {
+		return new Promise<void>((resolve, reject) => {
 			const transactionRequest = this.db.transaction("favorites", "readwrite");
 			const store = transactionRequest.objectStore("favorites");
 			const request = store.add({ tcode });
@@ -173,7 +173,7 @@ export default class Database extends UI5Element {
 	}
 
 	public async removeFavorite(tcode: string) {
-		return new Promise((resolve, reject) => {
+		return new Promise<void>((resolve, reject) => {
 			const transactionRequest = this.db.transaction("favorites", "readwrite");
 			const store = transactionRequest.objectStore("favorites");
 			const request = store.delete(tcode);
@@ -198,7 +198,7 @@ export default class Database extends UI5Element {
 	}
 
 	public async clearTransactions() {
-		return new Promise((resolve, reject) => {
+		return new Promise<void>((resolve, reject) => {
 			const transactionRequest = this.db.transaction(
 				"transactions",
 				"readwrite"
@@ -213,7 +213,7 @@ export default class Database extends UI5Element {
 	}
 
 	public async clearFavorites() {
-		return new Promise((resolve, reject) => {
+		return new Promise<void>((resolve, reject) => {
 			const transactionRequest = this.db.transaction("favorites", "readwrite");
 			const store = transactionRequest.objectStore("favorites");
 			const request = store.clear();
