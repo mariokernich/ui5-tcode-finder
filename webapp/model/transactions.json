@@ -647,5 +647,17 @@
 		"title": "System Resource Monitor",
 		"description": "Monitor and analyze system resources like CPU and memory",
 		"tags": "GENERAL"
+	},
+	{
+		"tcode": "SCOT",
+		"title": "SMTP Mail configuration",
+		"description": "Configure and manage SMTP mail settings",
+		"tags": "GENERAL"
+	},
+	{
+		"tcode": "SOST",
+		"title": "Send Requests",
+		"description": "Monitor and manage outbound email requests",
+		"tags": "GENERAL"
 	}
 ]
