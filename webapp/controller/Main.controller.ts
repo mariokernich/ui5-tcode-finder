@@ -229,9 +229,6 @@ export default class Main extends BaseController {
 		const table = this.byId("transactionTable") as Table;
 		const binding = table.getBinding("items") as ListBinding;
 		const query = event.getParameter("newValue");
-		const input = event.getSource();
-
-		input.setValue(input.getValue().toUpperCase());
 
 		if (query.length === 0) {
 			binding.filter([]);
