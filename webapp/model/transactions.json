@@ -659,5 +659,11 @@
 		"title": "Send Requests",
 		"description": "Monitor and manage outbound email requests",
 		"tags": "GENERAL"
+	},
+	{
+		"tcode": "SAPC",
+		"title": "ABAP Push Channel (APC)",
+		"description": "Manage, configure and test ABAP Push Channel settings",
+		"tags": "GENERAL"
 	}
 ]
