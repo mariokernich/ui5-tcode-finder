@@ -1,3 +1,5 @@
+<img src="./logo.png" alt="Logo" width="250"/>
+
 # T-Code Quick Finder
 
 ![Build](https://github.com/marioke/de.kernich.tcode/actions/workflows/build.yml/badge.svg)
