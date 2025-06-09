@@ -1,7 +1,5 @@
 <img src="./logo.png" alt="Logo" width="250"/>
 
-# T-Code Quick Finder
-
 ![Build](https://github.com/marioke/de.kernich.tcode/actions/workflows/build.yml/badge.svg)
 ![Eslint](https://github.com/marioke/de.kernich.tcode/actions/workflows/eslint.yml/badge.svg)
 ![TypeScript](https://github.com/marioke/de.kernich.tcode/actions/workflows/typescript.yml/badge.svg)
@@ -14,7 +12,7 @@ Welcome to the T-Code Quick Finder project. This application provides a fast and
 
 ## Overview
 
-This project demonstrates a TypeScript setup for developing UI5 applications. It is designed to help developers quickly find and manage T-Codes necessary for UI5 and Fiori projects. The application includes features such as search functionality, copy to clipboard, favorite management with local storage, and more.
+This project is designed to help developers quickly find and manage T-Codes necessary for UI5 and Fiori projects. The application includes features such as search functionality, copy to clipboard, favorite management with local storage, and more.
 
 ## Features
 
