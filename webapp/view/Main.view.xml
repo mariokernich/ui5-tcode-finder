@@ -1,154 +1,160 @@
 <mvc:View
-    controllerName="de.kernich.tcode.controller.Main"
-    displayBlock="true"
-    xmlns="sap.m"
-    xmlns:mvc="sap.ui.core.mvc"
-    xmlns:core="sap.ui.core"
-    core:require="{
-		formatter: 'de/kernich/tcode/model/formatter'
+	controllerName="de.kernich.tcode.controller.Main"
+	displayBlock="true"
+	xmlns="sap.m"
+	xmlns:mvc="sap.ui.core.mvc"
+	xmlns:core="sap.ui.core"
+	core:require="{
+		formatMessage: 'sap/base/strings/formatMessage'
 	}"
 >
-    <Page
-        id="page"
-        showFooter="{= ${local>/selectedTag} === 'CUSTOM' }"
-        busy="{local>/busy}"
-        busyIndicatorDelay="0"
-    >
-        <customHeader>
-            <core:Fragment
-                fragmentName="de.kernich.tcode.view.fragments.Header"
-                type="XML"
-            />
-        </customHeader>
-        <VBox>
-            <IconTabBar
-                id="iconTabBar"
-                select=".onIconTabBarSelect"
-                applyContentPadding="false"
-                headerMode="Inline"
-                selectedKey="{local>/selectedTag}"
-                upperCase="true"
-            >
-                <items>
-                    <IconTabFilter
-                        key="ALL"
-                        text="{= 'All (' + ${local>/allCount} + ')' }"
-                        icon="sap-icon://multiselect-all"
-                    />
-                    <IconTabFilter
-                        key="GENERAL"
-                        text="{= 'GENERAL (' + ${local>/generalCount} + ')' }"
-                        icon="sap-icon://world"
-                    />
-                    <IconTabFilter
-                        key="UI5"
-                        text="{= 'UI5/FIORI (' + ${local>/ui5Count} + ')' }"
-                        icon="sap-icon://popup-window"
-                    />
-                    <IconTabFilter
-                        key="ABAP"
-                        text="{= 'ABAP (' + ${local>/abapCount} + ')' }"
-                        icon="sap-icon://syntax"
-                    />
-                    <IconTabFilter
-                        key="EWM"
-                        text="{= 'SAP EWM (' + ${local>/ewmCount} + ')' }"
-                        icon="sap-icon://business-objects-explorer"
-                    />
-                    <IconTabFilter
-                        key="ERP"
-                        text="{= 'SAP ERP (' + ${local>/erpCount} + ')' }"
-                        icon="sap-icon://factory"
-                    />
-                    <IconTabFilter
-                        key="FI"
-                        text="{= 'SAP FI (' + ${local>/fiCount} + ')' }"
-                        icon="sap-icon://money-bills"
-                    />
-                    <IconTabFilter
-                        key="CUSTOM"
-                        text="{= 'CUSTOM (' + ${local>/customCount} + ')' }"
-                        icon="sap-icon://wrench"
-                    />
-                </items>
-            </IconTabBar>
-            <Table
-                id="transactionTable"
-                items="{ path: '/' }"
-                mode="None"
-                selectionChange=".onSelectionChange"
-                itemPress=".onRowPress"
-                noDataText="No transactions found"
-            >
-                <contextMenu>
-                    <Menu>
-                        <MenuItem
-                            text="Edit"
-                            icon="sap-icon://edit"
-                            press=".onEditTransaction"
-                            visible="{= ${tags}.indexOf('CUSTOM') !== -1 }"
-                        />
-                    </Menu>
-                </contextMenu>
-                <columns>
-                    <Column
-                        width="{= ${device>/system/desktop} ? '200px' : 'auto' }"
-                    >
-                        <Text text="Transaction code" />
-                    </Column>
-                    <Column
-                        width="{= ${device>/system/desktop} ? '300px' : 'auto' }"
-                    >
-                        <Text text="Title" />
-                    </Column>
-                    <Column visible="{= ${device>/system/desktop} }">
-                        <Text text="Description" />
-                    </Column>
-                    <Column hAlign="Right" />
-                </columns>
-                <items>
-                    <ColumnListItem
-                        type="Active"
-                        press=".onRowPress"
-                    >
-                        <cells>
-                            <Text text="{= ${tcode}.toUpperCase() }" />
-                            <Text text="{ path: 'title' }" />
-                            <Text
-                                text="{ path: 'description' }"
-                                visible="{= ${device>/system/desktop} }"
-                            />
-                            <HBox justifyContent="End">
-                                <Button
-                                    icon="{= ${favorite} ? 'sap-icon://favorite' : 'sap-icon://unfavorite' }"
-                                    press=".onToggleFavorite"
-                                    type="Transparent"
-                                />
-                            </HBox>
-                        </cells>
-                    </ColumnListItem>
-                </items>
-            </Table>
-        </VBox>
-        <footer>
-            <OverflowToolbar>
-                <Button
-                    id="deleteButton"
-                    icon="sap-icon://delete"
-                    press=".onDeleteTransaction"
-                    tooltip="Delete selected transactions"
-                    text="Delete"
-                    type="Reject"
-                    enabled="false"
-                />
-                <Button
-                    icon="sap-icon://add-document"
-                    press=".onAddTransaction"
-                    tooltip="Add new transaction"
-                    text="New"
-                    type="Ghost"
-                />
-            </OverflowToolbar>
-        </footer>
-    </Page>
+	<Page
+		id="page"
+		showFooter="{= ${view>/selectedGroup} === 'CUSTOM' }"
+		busy="{view>/busy}"
+		busyIndicatorDelay="0"
+	>
+		<customHeader>
+			<core:Fragment
+				fragmentName="de.kernich.tcode.view.fragments.Header"
+				type="XML"
+			/>
+		</customHeader>
+		<content>
+			<IconTabBar
+				id="groupTabBar"
+				selectedKey="{view>/selectedGroup}"
+				select=".onGroupSelect"
+				applyContentPadding="false"
+				headerMode="Inline"
+				upperCase="true"
+			>
+				<items>
+					<IconTabFilter
+						key="ALL"
+						icon="sap-icon://multiselect-all"
+						text="{ parts: ['i18n>groupTab', 'i18n>group.ALL', 'view>/counts/ALL'], formatter: 'formatMessage' }"
+					/>
+					<IconTabFilter
+						key="GENERAL"
+						icon="sap-icon://world"
+						text="{ parts: ['i18n>groupTab', 'i18n>group.GENERAL', 'view>/counts/GENERAL'], formatter: 'formatMessage' }"
+						visible="{view>/groupVisible/GENERAL}"
+					/>
+					<IconTabFilter
+						key="UI5"
+						icon="sap-icon://popup-window"
+						text="{ parts: ['i18n>groupTab', 'i18n>group.UI5', 'view>/counts/UI5'], formatter: 'formatMessage' }"
+						visible="{view>/groupVisible/UI5}"
+					/>
+					<IconTabFilter
+						key="ABAP"
+						icon="sap-icon://syntax"
+						text="{ parts: ['i18n>groupTab', 'i18n>group.ABAP', 'view>/counts/ABAP'], formatter: 'formatMessage' }"
+						visible="{view>/groupVisible/ABAP}"
+					/>
+					<IconTabFilter
+						key="EWM"
+						icon="sap-icon://business-objects-explorer"
+						text="{ parts: ['i18n>groupTab', 'i18n>group.EWM', 'view>/counts/EWM'], formatter: 'formatMessage' }"
+						visible="{view>/groupVisible/EWM}"
+					/>
+					<IconTabFilter
+						key="ERP"
+						icon="sap-icon://factory"
+						text="{ parts: ['i18n>groupTab', 'i18n>group.ERP', 'view>/counts/ERP'], formatter: 'formatMessage' }"
+						visible="{view>/groupVisible/ERP}"
+					/>
+					<IconTabFilter
+						key="FI"
+						icon="sap-icon://money-bills"
+						text="{ parts: ['i18n>groupTab', 'i18n>group.FI', 'view>/counts/FI'], formatter: 'formatMessage' }"
+						visible="{view>/groupVisible/FI}"
+					/>
+					<IconTabFilter
+						key="CUSTOM"
+						icon="sap-icon://wrench"
+						text="{ parts: ['i18n>groupTab', 'i18n>group.CUSTOM', 'view>/counts/CUSTOM'], formatter: 'formatMessage' }"
+						visible="{view>/groupVisible/CUSTOM}"
+					/>
+				</items>
+			</IconTabBar>
+			<Table
+				id="transactionTable"
+				items="{
+					path: '/',
+					sorter: [
+						{ path: 'favorite', descending: true },
+						{ path: 'tcode' }
+					]
+				}"
+				mode="{= ${view>/selectedGroup} === 'CUSTOM' ? 'MultiSelect' : 'None' }"
+				itemPress=".onItemPress"
+				selectionChange=".onSelectionChange"
+				beforeOpenContextMenu=".onBeforeOpenContextMenu"
+				noDataText="{i18n>tableNoData}"
+				sticky="ColumnHeaders"
+			>
+				<contextMenu>
+					<Menu>
+						<MenuItem
+							text="{i18n>editTransaction}"
+							icon="sap-icon://edit"
+							press=".onEditTransaction"
+						/>
+					</Menu>
+				</contextMenu>
+				<columns>
+					<Column width="{= ${device>/system/desktop} ? '14rem' : 'auto' }">
+						<Text text="{i18n>columnTcode}" />
+					</Column>
+					<Column width="{= ${device>/system/desktop} ? '20rem' : 'auto' }">
+						<Text text="{i18n>columnTitle}" />
+					</Column>
+					<Column visible="{device>/system/desktop}">
+						<Text text="{i18n>columnDescription}" />
+					</Column>
+					<Column
+						hAlign="End"
+						width="4rem"
+					/>
+				</columns>
+				<items>
+					<ColumnListItem type="Active">
+						<cells>
+							<Text text="{tcode}" />
+							<Text text="{title}" />
+							<Text text="{description}" />
+							<Button
+								icon="{= ${favorite} ? 'sap-icon://favorite' : 'sap-icon://unfavorite' }"
+								tooltip="{= ${favorite} ? ${i18n>favoriteRemove} : ${i18n>favoriteAdd} }"
+								type="Transparent"
+								press=".onToggleFavorite"
+							/>
+						</cells>
+					</ColumnListItem>
+				</items>
+			</Table>
+		</content>
+		<footer>
+			<OverflowToolbar>
+				<Button
+					id="deleteButton"
+					icon="sap-icon://delete"
+					text="{i18n>deleteTransactions}"
+					tooltip="{i18n>deleteTransactionsTooltip}"
+					type="Reject"
+					enabled="{= ${view>/selectedCount} > 0 }"
+					press=".onDeleteTransactions"
+				/>
+				<Button
+					icon="sap-icon://add-document"
+					text="{i18n>newTransaction}"
+					tooltip="{i18n>newTransactionTooltip}"
+					type="Ghost"
+					press=".onAddTransaction"
+				/>
+			</OverflowToolbar>
+		</footer>
+	</Page>
 </mvc:View>

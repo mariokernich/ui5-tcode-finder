@@ -1,25 +1,35 @@
+// @ts-check
 import eslint from "@eslint/js";
+import { defineConfig, globalIgnores } from "eslint/config";
 import globals from "globals";
 import tseslint from "typescript-eslint";
 
-export default tseslint.config(
+export default defineConfig(
+	globalIgnores(["dist/", "coverage/", "report/"]),
 	eslint.configs.recommended,
-	...tseslint.configs.recommended,
-	...tseslint.configs.recommendedTypeChecked,
+	tseslint.configs.recommendedTypeChecked,
+	tseslint.configs.stylisticTypeChecked,
 	{
 		languageOptions: {
-			globals: {
-				...globals.browser,
-				sap: "readonly"
-			},
-			ecmaVersion: 2023,
+			globals: globals.browser,
 			parserOptions: {
-				project: true,
-				tsconfigRootDir: import.meta.dirname
-			}
-		}
+				projectService: true,
+				tsconfigRootDir: import.meta.dirname,
+			},
+		},
 	},
 	{
-		ignores: ["eslint.config.mjs", "webapp/test/e2e/**"]
+		// QUnit supports promises as test callbacks and hooks, its typings do not declare them
+		files: ["webapp/test/**/*.ts"],
+		rules: {
+			"@typescript-eslint/no-misused-promises": ["error", { checksVoidReturn: false }],
+		},
+	},
+	{
+		files: ["**/*.{js,mjs,cjs}"],
+		extends: [tseslint.configs.disableTypeChecked],
+		languageOptions: {
+			globals: globals.node,
+		},
 	}
 );

@@ -72,7 +72,7 @@
 		"tags": "GENERAL"
 	},
 	{
-		"tcode": "/ui2/flp",
+		"tcode": "/UI2/FLP",
 		"title": "SAP Fiori Launchpad",
 		"description": "Open the SAP Fiori Launchpad in a web browser",
 		"tags": "UI5"
@@ -204,7 +204,7 @@
 		"tags": "GENERAL"
 	},
 	{
-		"tcode": "stms",
+		"tcode": "STMS",
 		"title": "Transport Management System",
 		"description": "Manage and monitor transport requests",
 		"tags": "GENERAL"
@@ -252,7 +252,7 @@
 		"tags": "GENERAL"
 	},
 	{
-		"tcode": "/iwfnd/virus_scan",
+		"tcode": "/IWFND/VIRUS_SCAN",
 		"title": "Virus Scan Profile Configuration",
 		"description": "Set up virus scanning for UI5 or disable it system-wide",
 		"tags": "UI5"

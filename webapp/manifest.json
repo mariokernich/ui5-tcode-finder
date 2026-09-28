@@ -1,20 +1,32 @@
 {
-	"_version": "1.12.0",
+	"_version": "2.8.0",
 
 	"sap.app": {
 		"id": "de.kernich.tcode",
 		"type": "application",
-		"i18n": "i18n/i18n.properties",
+		"i18n": {
+			"bundleName": "de.kernich.tcode.i18n.i18n",
+			"supportedLocales": [""],
+			"fallbackLocale": ""
+		},
 		"title": "{{appTitle}}",
 		"description": "{{appDescription}}",
 		"applicationVersion": {
 			"version": "${version}"
+		},
+		"dataSources": {
+			"standardTransactions": {
+				"uri": "model/transactions.json",
+				"type": "JSON"
+			}
 		}
 	},
 
 	"sap.ui": {
 		"technology": "UI5",
-		"icons": {},
+		"icons": {
+			"favIcon": "img/favicon.ico"
+		},
 		"deviceTypes": {
 			"desktop": true,
 			"tablet": true,
@@ -26,15 +38,17 @@
 		"rootView": {
 			"viewName": "de.kernich.tcode.view.App",
 			"type": "XML",
-			"async": true,
 			"id": "app"
 		},
 
 		"dependencies": {
-			"minUI5Version": "1.133.0",
+			"minUI5Version": "1.148.0",
 			"libs": {
 				"sap.ui.core": {},
-				"sap.m": {}
+				"sap.m": {},
+				"sap.ui.unified": {
+					"lazy": true
+				}
 			}
 		},
 
@@ -45,16 +59,29 @@
 			"cozy": true
 		},
 
-		"models": {},
+		"models": {
+			"i18n": {
+				"type": "sap.ui.model.resource.ResourceModel",
+				"settings": {
+					"bundleName": "de.kernich.tcode.i18n.i18n",
+					"supportedLocales": [""],
+					"fallbackLocale": ""
+				}
+			},
+			"standardTransactions": {
+				"type": "sap.ui.model.json.JSONModel",
+				"dataSource": "standardTransactions"
+			}
+		},
 
 		"routing": {
 			"config": {
 				"routerClass": "sap.m.routing.Router",
+				"type": "View",
 				"viewType": "XML",
-				"viewPath": "de.kernich.tcode.view",
+				"path": "de.kernich.tcode.view",
 				"controlId": "app",
-				"controlAggregation": "pages",
-				"async": true
+				"controlAggregation": "pages"
 			},
 			"routes": [
 				{
@@ -65,8 +92,8 @@
 			],
 			"targets": {
 				"main": {
-					"viewId": "main",
-					"viewName": "Main"
+					"id": "main",
+					"name": "Main"
 				}
 			}
 		}

@@ -1,22 +1,11 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 	<head>
-		<meta
-			http-equiv="Cache-control"
-			content="no-cache, no-store, must-revalidate"
-		/>
-		<meta http-equiv="Pragma" content="no-cache" />
-		<meta http-equiv="expires" content="0" />
-
-		<link
-			type="image/x-icon"
-			href="https://tcodes.kernich.de/img/favicon.ico"
-			rel="shortcut icon"
-		/>
-
 		<meta charset="utf-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 		<title>T-Code Quick Finder: Your Ultimate SAP Shortcut Manager</title>
+		<link rel="icon" href="img/favicon.ico" />
+		<link rel="canonical" href="https://tcodes.kernich.de/" />
 
 		<!-- SEO Meta Tags -->
 		<meta
@@ -30,6 +19,7 @@
 		<meta name="author" content="Mario Kernich" />
 
 		<!-- Social Media Sharing Meta Tags -->
+		<meta property="og:type" content="website" />
 		<meta
 			property="og:title"
 			content="T-Code Quick Finder: Your Ultimate SAP Shortcut Manager"
@@ -42,7 +32,9 @@
 			property="og:image"
 			content="https://tcodes.kernich.de/img/og-image.png"
 		/>
-		<meta property="og:url" content="https://tcodes.kernich.de" />
+		<meta property="og:image:width" content="1200" />
+		<meta property="og:image:height" content="630" />
+		<meta property="og:url" content="https://tcodes.kernich.de/" />
 		<meta name="twitter:card" content="summary_large_image" />
 		<meta
 			name="twitter:title"
@@ -54,22 +46,22 @@
 		/>
 		<meta
 			name="twitter:image"
-			content="https://tcodes.kernich.de/img/twitter-image.png"
+			content="https://tcodes.kernich.de/img/og-image.png"
 		/>
 
 		<script
 			id="sap-ui-bootstrap"
-			src="https://sdk.openui5.org/resources/sap-ui-core.js"
+			src="https://sdk.openui5.org/1.148.9/resources/sap-ui-core.js"
 			data-sap-ui-resource-roots='{
 				"de.kernich.tcode": "./"
 			}'
 			data-sap-ui-theme="sap_horizon"
+			data-sap-ui-language="en"
 			data-sap-ui-on-init="module:sap/ui/core/ComponentSupport"
 			data-sap-ui-async="true"
 			data-sap-ui-compat-version="edge"
 			data-sap-ui-frame-options="trusted"
-			data-sap-ui-xx-waitForTheme="true"
-			data-sap-ui-xx-supportedLanguages="en,de"
+			data-sap-ui-xx-wait-for-theme="rendering"
 		></script>
 		<script
 			async

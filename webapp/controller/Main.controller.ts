@@ -1,788 +1,631 @@
-import BaseController from "./BaseController";
-import JSONModel from "sap/ui/model/json/JSONModel";
-import MessageToast from "sap/m/MessageToast";
-import Filter from "sap/ui/model/Filter";
-import FilterOperator from "sap/ui/model/FilterOperator";
-import Sorter from "sap/ui/model/Sorter";
-import Dialog from "sap/m/Dialog";
-import Button from "sap/m/Button";
-import Label from "sap/m/Label";
-import Input from "sap/m/Input";
+import Log from "sap/base/Log";
+import type { Button$PressEvent } from "sap/m/Button";
+import type CheckBox from "sap/m/CheckBox";
+import type Dialog from "sap/m/Dialog";
+import type Input from "sap/m/Input";
+import type { ListBase$BeforeOpenContextMenuEvent, ListBase$ItemPressEvent } from "sap/m/ListBase";
+import type { MenuItem$PressEvent } from "sap/m/MenuItem";
 import MessageBox from "sap/m/MessageBox";
-import { MenuItem$PressEvent } from "sap/m/MenuItem";
-import { Button$PressEvent } from "sap/m/Button";
-import SearchField, { SearchField$LiveChangeEvent } from "sap/m/SearchField";
-import Table from "sap/m/Table";
-import ListBinding from "sap/ui/model/ListBinding";
-import Util from "../util/Util";
-import Database, { Transaction } from "../util/Database";
-import VBox from "sap/m/VBox";
-import IconTabBar, { IconTabBar$SelectEvent } from "sap/m/IconTabBar";
-import DarkModeHelper from "../util/DarkModeHelper";
-import DialogManager from "../util/DialogManager";
-import Constants from "../Constants";
-import { IconTab } from "sap/m/library";
-import IconTabFilter from "sap/m/IconTabFilter";
-import SettingsDialog, { ImportData, COPY_OPTIONS } from "./SettingsDialog";
+import MessageToast from "sap/m/MessageToast";
+import type SearchField from "sap/m/SearchField";
+import type { SearchField$LiveChangeEvent, SearchField$SearchEvent } from "sap/m/SearchField";
+import type Table from "sap/m/Table";
+import Device from "sap/ui/Device";
+import { ValueState } from "sap/ui/core/library";
+import Theming from "sap/ui/core/Theming";
+import FileUtil from "sap/ui/core/util/File";
+import type Context from "sap/ui/model/Context";
+import Filter from "sap/ui/model/Filter";
+import FilterType from "sap/ui/model/FilterType";
+import JSONModel from "sap/ui/model/json/JSONModel";
+import type ListBinding from "sap/ui/model/ListBinding";
+import { ALL_GROUPS, CUSTOM_GROUP, GITHUB_URL, GROUPS, LINKEDIN_URL } from "../Constants";
+import {
+	SEARCH_FIELDS,
+	containsQuery,
+	countByGroup,
+	isInAnyGroup,
+	normalizeQuery,
+	normalizeTcode,
+	toCustomTransaction,
+	type Transaction,
+	type TransactionEntry,
+} from "../model/transaction";
+import Database from "../util/Database";
+import { copyToClipboard, openUrl } from "../util/browser";
+import { confirmAction, getErrorMessage } from "../util/messages";
+import {
+	CopyOption,
+	buildCopyText,
+	buildWebGuiUrl,
+	createExportData,
+	dismissWelcomeDialog,
+	isWelcomeDialogDismissed,
+	loadSettings,
+	sanitizeSettings,
+	saveSettings,
+	type ImportData,
+	type Settings,
+} from "../util/settings";
+import { isDarkTheme } from "../util/ThemeManager";
+import BaseController from "./BaseController";
+import SettingsDialog from "./SettingsDialog";
 
-type Action = keyof MessageBox["Action"];
+const LOG_COMPONENT = "de.kernich.tcode.controller.Main";
 
-interface LocalModel {
-	selectedTag: string;
-	allCount: number;
-	generalCount: number;
-	ui5Count: number;
-	abapCount: number;
-	ewmCount: number;
-	erpCount: number;
-	fiCount: number;
-	customCount: number;
+interface ViewState {
 	busy: boolean;
-	shiftPressed: boolean;
-	dark: boolean;
+	query: string;
+	selectedGroup: string;
+	counts: Record<string, number>;
+	groupVisible: Record<string, boolean>;
+	selectedCount: number;
+	githubIcon: string;
+	linkedinIcon: string;
 }
 
-interface TableItem {
-	getBindingContext(): {
-		getProperty(key: string): unknown;
-	};
+interface ComponentData {
+	databaseName?: string;
+}
+
+interface TransactionForm {
+	mode: "add" | "edit";
+	heading: string;
+	tcode: string;
+	title: string;
+	description: string;
+	tcodeState: ValueState;
+	tcodeStateText: string;
+}
+
+function imageUrl(fileName: string): string {
+	return sap.ui.require.toUrl(`de/kernich/tcode/img/${fileName}`);
 }
 
 /**
  * @namespace de.kernich.tcode.controller
  */
 export default class Main extends BaseController {
-	private db: Database;
-	private standardTransactions: Transaction[];
-	private local: LocalModel;
+	private database: Database;
+	private readonly viewModel = new JSONModel();
+	private readonly transactionModel = new JSONModel([]);
+	private settings: Settings;
+	private standardTransactions: Transaction[] = [];
+	private entries: TransactionEntry[] = [];
+	private shiftKeyPressed = false;
+	private savingTransaction = false;
+	private transactionDialog?: Promise<Dialog>;
+	private settingsDialog?: SettingsDialog;
+
+	/**
+	 * Remembers whether Shift was pressed during the last user interaction; this decides between the
+	 * /n and /o prefix. Registered in the capture phase to run before the press handlers.
+	 */
+	private readonly rememberShiftKey = (event: KeyboardEvent | PointerEvent): void => {
+		this.shiftKeyPressed = event.shiftKey;
+	};
+
+	private readonly onThemeApplied = (): void => {
+		const dark = isDarkTheme(Theming.getTheme());
+		this.viewModel.setProperty("/githubIcon", imageUrl(dark ? "github-brands-w.svg" : "github-brands.svg"));
+		this.viewModel.setProperty(
+			"/linkedinIcon",
+			imageUrl(dark ? "linkedin-brands-w.svg" : "linkedin-brands.svg")
+		);
+	};
 
 	public onInit(): void {
-		this.local = {
-			selectedTag: "ALL",
-			allCount: 0,
-			generalCount: 0,
-			ui5Count: 0,
-			abapCount: 0,
-			ewmCount: 0,
-			erpCount: 0,
-			fiCount: 0,
-			customCount: 0,
-			busy: false,
-			shiftPressed: false,
-			dark: false,
-		};
-		void this.handleInit();
+		// Tests pass a separate database name to keep the data of the user untouched
+		const componentData = this.getOwnerComponent().getComponentData() as ComponentData | undefined;
+		this.database = new Database(componentData?.databaseName);
+		this.settings = loadSettings();
+		this.viewModel.setData({
+			busy: true,
+			query: "",
+			selectedGroup: ALL_GROUPS,
+			counts: {},
+			groupVisible: {},
+			selectedCount: 0,
+			githubIcon: "",
+			linkedinIcon: "",
+		} satisfies ViewState);
+		this.setModel(this.viewModel, "view");
+		// List bindings show only 100 entries by default
+		this.transactionModel.setSizeLimit(Number.MAX_SAFE_INTEGER);
+		this.setModel(this.transactionModel);
+		this.updateGroupVisibility();
+
+		document.addEventListener("pointerdown", this.rememberShiftKey, true);
+		document.addEventListener("keydown", this.rememberShiftKey, true);
+		Theming.attachApplied(this.onThemeApplied);
+
+		void this.initialize();
 	}
 
-	private async handleInit() {
-		this.db = new Database();
-		this.setDefaultSettings();
-		this.setModel(new JSONModel(this.local, true), "local");
-
-		const model = new JSONModel();
-		await model.loadData("model/transactions.json");
-		this.standardTransactions = model.getData() as Transaction[];
-
-		await this.db.open();
-		await this.refresh();
-
-		this.handleTheme();
-		this.updateVisibleGroups();
-		this.handleShift();
-		this.showWelcomeDialog();
+	public onExit(): void {
+		document.removeEventListener("pointerdown", this.rememberShiftKey, true);
+		document.removeEventListener("keydown", this.rememberShiftKey, true);
+		Theming.detachApplied(this.onThemeApplied);
+		this.settingsDialog?.destroy();
+		this.database.close();
+		this.viewModel.destroy();
+		this.transactionModel.destroy();
 	}
 
-	private handleShift(): void {
-		document.addEventListener("keydown", (event) => {
-			if (event.shiftKey) {
-				this.local.shiftPressed = true;
-			}
-		});
+	// -----------------------------------------------------------------------------------------
+	// Search, groups and table
+	// -----------------------------------------------------------------------------------------
 
-		document.addEventListener("keyup", (event) => {
-			if (!event.shiftKey) {
-				this.local.shiftPressed = false;
-			}
-		});
+	public onSearch(event: SearchField$LiveChangeEvent | SearchField$SearchEvent): void {
+		this.viewModel.setProperty("/query", event.getSource().getValue());
+		this.applyFilters();
 	}
 
-	private setDefaultSettings(): void {
-		const defaultSettings = {
-			copyWithPrefix: "true",
-			resetSearchAfterCopy: "false",
-			theme: "System",
-			visibleGroups: JSON.stringify(Constants.TCODE_GROUPS),
-		};
-
-		Object.entries(defaultSettings).forEach(([key, value]) => {
-			if (localStorage.getItem(key) === null) {
-				localStorage.setItem(key, value);
-			}
-		});
+	public onGroupSelect(): void {
+		// The table mode is bound to the selected group. Switching to a mode without selection has
+		// removed the selection already.
+		this.updateSelectedCount();
+		this.applyFilters();
+		this.focusSearch();
 	}
 
-	private handleTheme(): void {
-		const theme = localStorage.getItem("theme") || "System";
-		this.applyTheme(theme);
-
-		const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
-		mediaQuery.addEventListener("change", (e) => {
-			const darkMode = e.matches;
-			this.applyTheme(darkMode ? "Dark" : "Light");
-			this.local.dark = darkMode;
-		});
+	public onSelectionChange(): void {
+		this.updateSelectedCount();
 	}
 
-	private async refresh() {
-		this.local.busy = true;
+	public async onItemPress(event: ListBase$ItemPressEvent): Promise<void> {
+		const entry = this.getEntry(event.getParameter("listItem")?.getBindingContext());
+		if (entry) {
+			await this.copyOrOpen(entry.tcode);
+		}
+	}
+
+	public async onToggleFavorite(event: Button$PressEvent): Promise<void> {
+		const entry = this.getEntry(event.getSource().getBindingContext());
+		if (!entry) {
+			return;
+		}
+		const favorite = !entry.favorite;
 		try {
-			const customTransactions = await this.db.getTransactions();
-			const transactions = [
-				...this.standardTransactions,
-				...customTransactions,
-			];
-			const favoriteTransactions = await this.db.getFavoriteTransactions();
+			await this.database.setFavorite(entry.tcode, favorite);
+		} catch (error) {
+			this.showError("favoriteFailed", error);
+			return;
+		}
+		this.entries
+			.filter((candidate) => candidate.tcode === entry.tcode)
+			.forEach((candidate) => (candidate.favorite = favorite));
+		// Forces the table to sort the favorites to the top
+		this.transactionModel.refresh(true);
+	}
 
-			transactions.forEach((transaction) => {
-				transaction.favorite = favoriteTransactions.some(
-					(fav) => fav.tcode === transaction.tcode
-				);
+	public onBeforeOpenContextMenu(event: ListBase$BeforeOpenContextMenuEvent): void {
+		const entry = this.getEntry(event.getParameter("listItem")?.getBindingContext());
+		// Only custom transactions can be edited; show the browser menu for the others
+		if (!entry?.custom) {
+			event.preventDefault();
+		}
+	}
+
+	// -----------------------------------------------------------------------------------------
+	// Custom transactions
+	// -----------------------------------------------------------------------------------------
+
+	public onAddTransaction(): void {
+		void this.openTransactionDialog({
+			mode: "add",
+			heading: this.getText("transactionDialogAddTitle"),
+			tcode: "",
+			title: "",
+			description: "",
+		});
+	}
+
+	public onEditTransaction(event: MenuItem$PressEvent): void {
+		const entry = this.getEntry(event.getSource().getBindingContext());
+		if (!entry?.custom) {
+			return;
+		}
+		void this.openTransactionDialog({
+			mode: "edit",
+			heading: this.getText("transactionDialogEditTitle", [entry.tcode]),
+			tcode: entry.tcode,
+			title: entry.title,
+			description: entry.description,
+		});
+	}
+
+	public onTransactionDialogAfterOpen(): void {
+		const form = this.getTransactionForm();
+		const inputId = form.mode === "add" ? "transactionCodeInput" : "transactionTitleInput";
+		(this.byId(inputId) as Input).focus();
+	}
+
+	public onTransactionCodeChange(): void {
+		this.getTransactionFormModel().setProperty("/tcodeState", ValueState.None);
+	}
+
+	public async onTransactionDialogSave(): Promise<void> {
+		if (this.savingTransaction) {
+			return;
+		}
+		this.savingTransaction = true;
+		try {
+			await this.saveTransaction();
+		} finally {
+			this.savingTransaction = false;
+		}
+	}
+
+	public async onTransactionDialogCancel(): Promise<void> {
+		(await this.getTransactionDialog()).close();
+	}
+
+	public async onDeleteTransactions(): Promise<void> {
+		const tcodes = this.getTable()
+			.getSelectedContexts()
+			.flatMap((context) => {
+				const entry = this.getEntry(context);
+				return entry?.custom ? [entry.tcode] : [];
 			});
 
-			const model = new JSONModel(transactions);
-			this.getView().setModel(model);
+		if (tcodes.length === 0) {
+			MessageToast.show(this.getText("deleteNothingSelected"));
+			return;
+		}
+		if (!(await confirmAction(this.getText("deleteConfirm", [tcodes.length]), MessageBox.Action.DELETE))) {
+			return;
+		}
 
-			this.filterTable();
-			this.sortTable();
-			this.updateDeleteButtonState();
-			void this.updateTabCounts();
-			this.focusSearch();
+		// Keep the favorite if a standard transaction with the same code exists
+		const standardTcodes = new Set(this.standardTransactions.map((transaction) => transaction.tcode));
+		try {
+			await this.database.deleteCustomTransactions(
+				tcodes,
+				tcodes.filter((tcode) => !standardTcodes.has(tcode))
+			);
+		} catch (error) {
+			this.showError("deleteFailed", error);
+			return;
+		}
+		MessageToast.show(this.getText("transactionsDeleted", [tcodes.length]));
+		await this.refresh();
+	}
+
+	// -----------------------------------------------------------------------------------------
+	// Settings, welcome dialog and links
+	// -----------------------------------------------------------------------------------------
+
+	public onOpenSettings(): void {
+		// The view is always available after the controller is initialized
+		this.settingsDialog ??= new SettingsDialog(this.getView()!, {
+			getText: (key, args) => this.getText(key, args),
+			save: (settings) => this.applySettings(settings),
+			export: () => this.exportData(),
+			import: (data) => this.importData(data),
+		});
+		void this.settingsDialog.open(this.settings);
+	}
+
+	public onWelcomeDialogClose(): void {
+		(this.byId("welcomeDialog") as Dialog).close();
+	}
+
+	public onWelcomeDialogAfterClose(): void {
+		if ((this.byId("welcomeDoNotShowAgain") as CheckBox).getSelected()) {
+			dismissWelcomeDialog();
+		}
+		(this.byId("welcomeDialog") as Dialog).destroy();
+	}
+
+	public onOpenGitHub(): void {
+		openUrl(GITHUB_URL);
+	}
+
+	public onOpenLinkedIn(): void {
+		openUrl(LINKEDIN_URL);
+	}
+
+	// -----------------------------------------------------------------------------------------
+	// Implementation
+	// -----------------------------------------------------------------------------------------
+
+	private async initialize(): Promise<void> {
+		try {
+			this.standardTransactions = await this.loadStandardTransactions();
+			await this.openDatabase();
+			await this.refresh();
+		} catch (error) {
+			this.showError("loadFailed", error);
 		} finally {
-			this.local.busy = false;
+			this.viewModel.setProperty("/busy", false);
+		}
+		this.focusSearch();
+		await this.showWelcomeDialog();
+	}
+
+	private async loadStandardTransactions(): Promise<Transaction[]> {
+		const model = this.getOwnerComponent().getModel("standardTransactions") as JSONModel;
+		await model.dataLoaded();
+		const data: unknown = model.getData();
+		if (!Array.isArray(data)) {
+			throw new Error("The standard transactions could not be loaded");
+		}
+		return data as Transaction[];
+	}
+
+	private async openDatabase(): Promise<void> {
+		try {
+			await this.database.open(() => MessageBox.warning(this.getText("databaseBlocked")));
+		} catch (error) {
+			// The app remains usable without favorites and custom transactions
+			Log.error("The database could not be opened", getErrorMessage(error), LOG_COMPONENT);
+			MessageBox.warning(this.getText("databaseUnavailable"));
 		}
 	}
 
-	private focusSearch(): void {
-		this.getView().byId("IdSearchField").focus();
-	}
-
-	private showWelcomeDialog(): void {
-		if (localStorage.getItem("doNotShowWelcomeDialog") !== "true") {
-			DialogManager.showWelcome();
-		}
-	}
-
-	public async onRowPress(event: Button$PressEvent) {
-		const source = event.getSource();
-		const context = source.getBindingContext();
-		const tcode = context.getProperty("tcode") as string;
-		await this.handleCopy(tcode);
-	}
-
-	private async handleCopy(tcode: string) {
-		const copyOption =
-			localStorage.getItem("copyOption") || COPY_OPTIONS.DEFAULT;
-		let sapSystemUrl = localStorage.getItem("sapSystemUrl") || "";
-		let textToCopy = tcode;
-
-		switch (copyOption) {
-			case COPY_OPTIONS.O_PREFIX:
-				textToCopy = `/o${tcode}`;
-				break;
-			case COPY_OPTIONS.DEFAULT:
-				textToCopy = this.local.shiftPressed ? `/o${tcode}` : `/n${tcode}`;
-				break;
-			case COPY_OPTIONS.WEB_GUI:
-				if (!sapSystemUrl) {
-					MessageToast.show("Please set SAP System URL in settings.");
-					return;
-				}
-				sapSystemUrl = sapSystemUrl.replace(/\/$/, "");
-				window.open(
-					`${sapSystemUrl}/sap/bc/gui/sap/its/webgui?~transaction=${encodeURIComponent(
-						tcode
-					)}`,
-					"_blank"
-				);
-				return;
+	/**
+	 * Reloads the custom transactions and favorites from the database.
+	 */
+	private async refresh(): Promise<void> {
+		let customTransactions: Transaction[] = [];
+		let favorites: string[] = [];
+		if (this.database.isOpen()) {
+			[customTransactions, favorites] = await Promise.all([
+				this.database.getCustomTransactions(),
+				this.database.getFavorites(),
+			]);
 		}
 
-		await Util.copy2Clipboard(textToCopy);
-		MessageToast.show(`Transaction ${tcode} copied.`);
+		const favoriteTcodes = new Set(favorites);
+		const toEntry = (transaction: Transaction, custom: boolean): TransactionEntry => ({
+			...transaction,
+			custom,
+			favorite: favoriteTcodes.has(transaction.tcode),
+		});
+		this.entries = [
+			...this.standardTransactions.map((transaction) => toEntry(transaction, false)),
+			...customTransactions
+				.map(toCustomTransaction)
+				.filter((transaction) => transaction !== undefined)
+				.map((transaction) => toEntry(transaction, true)),
+		];
 
-		if (localStorage.getItem("resetSearchAfterCopy") === "true") {
+		// Selections are remembered by binding path, which may point to another entry now
+		this.getTable().removeSelections(true);
+		this.viewModel.setProperty("/selectedCount", 0);
+		this.transactionModel.setData(this.entries);
+		this.applyFilters();
+	}
+
+	private applyFilters(): void {
+		const { query, selectedGroup } = this.viewModel.getData() as ViewState;
+		const groups = selectedGroup === ALL_GROUPS ? this.settings.visibleGroups : [selectedGroup];
+		const filters = [
+			new Filter({
+				path: "tags",
+				test: (tags: unknown) => typeof tags === "string" && isInAnyGroup(tags, groups),
+				caseSensitive: true,
+			}),
+		];
+
+		const normalizedQuery = normalizeQuery(query);
+		if (normalizedQuery) {
+			filters.push(
+				new Filter({
+					filters: SEARCH_FIELDS.map(
+						(path) =>
+							new Filter({
+								path,
+								test: (value: unknown) => containsQuery(value, normalizedQuery),
+								caseSensitive: true,
+							})
+					),
+					and: false,
+				})
+			);
+		}
+
+		this.getItemsBinding().filter(new Filter({ filters, and: true }), FilterType.Application);
+		this.viewModel.setProperty(
+			"/counts",
+			countByGroup(this.entries, query, this.settings.visibleGroups)
+		);
+	}
+
+	private async copyOrOpen(tcode: string): Promise<void> {
+		const { copyOption, sapSystemUrl, resetSearchAfterCopy } = this.settings;
+
+		if (copyOption === CopyOption.WebGui) {
+			if (sapSystemUrl) {
+				openUrl(buildWebGuiUrl(sapSystemUrl, tcode));
+			} else {
+				MessageToast.show(this.getText("systemUrlMissing"));
+			}
+			return;
+		}
+
+		const text = buildCopyText(tcode, copyOption, this.shiftKeyPressed);
+		try {
+			await copyToClipboard(text);
+		} catch (error) {
+			Log.warning("Copying to the clipboard failed", getErrorMessage(error), LOG_COMPONENT);
+			MessageToast.show(this.getText("copyFailed", [text]));
+			return;
+		}
+		MessageToast.show(this.getText("transactionCopied", [text]));
+
+		if (resetSearchAfterCopy) {
 			this.resetSearch();
 		}
 		this.focusSearch();
 	}
 
 	private resetSearch(): void {
-		const searchField = this.getView().byId("IdSearchField") as SearchField;
-		searchField.setValue("");
-		const table = this.byId("transactionTable") as Table;
-		const binding = table.getBinding("items") as ListBinding;
-		binding.filter([]);
-		this.local.selectedTag = "ALL";
+		this.viewModel.setProperty("/query", "");
+		this.viewModel.setProperty("/selectedGroup", ALL_GROUPS);
+		this.viewModel.setProperty("/selectedCount", 0);
+		this.applyFilters();
 	}
 
-	public onSearch(event: SearchField$LiveChangeEvent): void {
-		const table = this.byId("transactionTable") as Table;
-		const binding = table.getBinding("items") as ListBinding;
-		const query = event.getParameter("newValue");
+	private async saveTransaction(): Promise<void> {
+		const model = this.getTransactionFormModel();
+		const form = this.getTransactionForm();
+		const title = form.title.trim();
+		const description = form.description.trim();
+		const tcode = normalizeTcode(form.tcode);
 
-		if (query.length === 0) {
-			binding.filter([]);
-			void this.updateTabCounts();
-			return;
-		}
-
-		const filters = [
-			new Filter("tcode", FilterOperator.Contains, query),
-			new Filter("title", FilterOperator.Contains, query),
-			new Filter("description", FilterOperator.Contains, query),
-		];
-
-		binding.filter(
-			new Filter({
-				filters,
-				and: false,
-			}),
-			"Application"
-		);
-
-		void this.updateTabCounts(query);
-	}
-
-	public async onToggleFavorite(event: Button$PressEvent) {
-		const source = event.getSource();
-		const context = source.getBindingContext();
-		const tcode = context.getProperty("tcode") as string;
-		const favorite = context.getProperty("favorite") as boolean;
-
-		if (favorite) {
-			await this.db.removeFavorite(tcode);
-		} else {
-			await this.db.addFavorite(tcode);
-		}
-		await this.refresh();
-	}
-
-	private sortTable(): void {
-		const table = this.byId("transactionTable") as Table;
-		const binding = table.getBinding("items") as ListBinding;
-		const sorters = [new Sorter("favorite", true), new Sorter("tcode", false)];
-		binding.sort(sorters);
-	}
-
-	public onAddTransaction(): void {
-		const dialog = this.createAddTransactionDialog();
-		this.getView().addDependent(dialog);
-		dialog.open();
-	}
-
-	private createAddTransactionDialog(): Dialog {
-		const inputCode = new Input({
-			id: "tcodeInput",
-			width: "100%",
-			placeholder: "Enter transaction...",
-			submit: () => {
-				void this.handleAddTransactionSubmit(
-					inputCode,
-					inputTitle,
-					inputDescription,
-					dialog
-				);
-			},
-		}).addStyleClass("sapUiSmallMarginBottom");
-
-		const inputTitle = new Input({
-			id: "titleInput",
-			width: "100%",
-			placeholder: "Enter title...",
-			submit: () => {
-				void this.handleAddTransactionSubmit(
-					inputCode,
-					inputTitle,
-					inputDescription,
-					dialog
-				);
-			},
-		}).addStyleClass("sapUiSmallMarginBottom");
-
-		const inputDescription = new Input({
-			id: "descriptionInput",
-			width: "100%",
-			placeholder: "Enter description...",
-			submit: () => {
-				void this.handleAddTransactionSubmit(
-					inputCode,
-					inputTitle,
-					inputDescription,
-					dialog
-				);
-			},
-		});
-
-		const dialog = new Dialog({
-			title: "Add Transaction",
-			content: [
-				new VBox({
-					items: [
-						new Label({ text: "Transaction Code", labelFor: "tcodeInput" }),
-						inputCode,
-						new Label({ text: "Title", labelFor: "titleInput" }),
-						inputTitle,
-						new Label({ text: "Description", labelFor: "descriptionInput" }),
-						inputDescription,
-					],
-				}).addStyleClass("sapUiSmallMargin"),
-			],
-			beginButton: new Button({
-				text: "Save",
-				icon: "sap-icon://save",
-				press: () => {
-					void this.handleAddTransactionSubmit(
-						inputCode,
-						inputTitle,
-						inputDescription,
-						dialog
-					);
-				},
-			}),
-			endButton: new Button({
-				text: "Cancel",
-				icon: "sap-icon://decline",
-				press: () => {
-					dialog.close();
-					dialog.destroy();
-				},
-			}),
-		});
-
-		dialog.attachAfterOpen(() => {
-			inputCode.focus();
-		});
-
-		return dialog;
-	}
-
-	private async handleAddTransactionSubmit(
-		inputCode: Input,
-		inputTitle: Input,
-		inputDescription: Input,
-		dialog: Dialog
-	) {
-		const tcode = inputCode.getValue().trim();
-		if (!tcode) {
-			MessageToast.show("Transaction code cannot be empty.");
-			return;
-		}
-
-		if (await this.transactionExists(tcode)) {
-			MessageToast.show(`Transaction ${tcode} exists already.`);
-			return;
-		}
-
-		await this.addTransaction(
-			tcode,
-			inputTitle.getValue(),
-			inputDescription.getValue()
-		);
-		dialog.close();
-		dialog.destroy();
-	}
-
-	private async transactionExists(tcode: string): Promise<boolean> {
-		const customTransactions = await this.db.getTransactions();
-		const transactions = [...this.standardTransactions, ...customTransactions];
-		return transactions.some((item) => item.tcode === tcode);
-	}
-
-	private async addTransaction(
-		tcode: string,
-		title: string,
-		description: string
-	) {
-		const newTransaction = { tcode, title, description, tags: "CUSTOM" };
-		await this.db.addTransaction(newTransaction);
-		await this.refresh();
-	}
-
-	public onDeleteTransaction(): void {
-		const table = this.byId("transactionTable") as Table;
-		const selectedItems = table.getSelectedItems();
-
-		if (selectedItems.length === 0) {
-			MessageToast.show("Please select at least one transaction to delete.");
-			return;
-		}
-
-		MessageBox.confirm(
-			"Are you sure you want to delete the selected transactions?",
-			{
-				actions: [MessageBox.Action.YES, MessageBox.Action.NO],
-				onClose: async (action: Action) => {
-					if (action === MessageBox.Action.YES) {
-						await this.deleteSelectedTransactions(selectedItems);
-					}
-				},
-			}
-		);
-	}
-
-	private async deleteSelectedTransactions(selectedItems: TableItem[]) {
-		for (const item of selectedItems) {
-			const context = item.getBindingContext();
-			const tcode = context.getProperty("tcode") as string;
-			await this.db.deleteTransaction(tcode);
-		}
-		await this.refresh();
-	}
-
-	private updateDeleteButtonState(): void {
-		const table = this.byId("transactionTable") as Table;
-		const deleteButton = this.byId("deleteButton") as Button;
-		const selectedItems = table.getSelectedItems();
-		const canDelete = selectedItems.every((item) => {
-			const context = item.getBindingContext();
-			const tags = context.getProperty("tags") as string;
-			return tags.includes("CUSTOM");
-		});
-		deleteButton.setEnabled(canDelete);
-	}
-
-	public onSelectionChange(): void {
-		this.updateDeleteButtonState();
-	}
-
-	public onEditTransaction(event: MenuItem$PressEvent): void {
-		const item = event.getSource();
-		const context = item.getBindingContext();
-		const tcode = context.getProperty("tcode") as string;
-		const title = context.getProperty("title") as string;
-		const description = context.getProperty("description") as string;
-		const tags = context.getProperty("tags") as string;
-
-		if (tags.includes("CUSTOM")) {
-			this.handleEditTransaction(tcode, title, description);
-		} else {
-			MessageToast.show("Standard transactions cannot be edited.");
-		}
-	}
-
-	public onOpenSettings(): void {
-		const settingsDialog = new SettingsDialog({
-			onSave: (settings) => this.handleSettingsSave(settings),
-			onImport: (data) => this.handleImport(data),
-			onExport: () => this.handleExport(),
-		});
-		settingsDialog.open();
-	}
-
-	private handleSettingsSave(settings: {
-		copyOption: string;
-		sapSystemUrl: string;
-		resetSearchAfterCopy: boolean;
-		visibleGroups: string[];
-		theme: string;
-	}): void {
-		localStorage.setItem("copyOption", settings.copyOption);
-		localStorage.setItem("sapSystemUrl", settings.sapSystemUrl);
-		localStorage.setItem(
-			"resetSearchAfterCopy",
-			settings.resetSearchAfterCopy.toString()
-		);
-		localStorage.setItem(
-			"visibleGroups",
-			JSON.stringify(settings.visibleGroups)
-		);
-		localStorage.setItem("theme", settings.theme);
-
-		this.applyTheme(settings.theme);
-		this.updateVisibleGroups();
-		void this.updateTabCounts();
-		this.local.dark = settings.theme === "Dark";
-		this.focusSearch();
-	}
-
-	private updateVisibleGroups(): void {
-		const visibleGroups: string[] = JSON.parse(
-			localStorage.getItem("visibleGroups") || "[]"
-		) as string[];
-		const iconTabBar = this.byId("iconTabBar") as IconTabBar;
-		iconTabBar.getItems().forEach((item: IconTab) => {
-			if ((item as IconTabFilter).getKey() === "ALL") {
-				(item as IconTabFilter).setVisible(true);
+		if (form.mode === "add") {
+			const errorText = this.validateTcode(tcode);
+			if (errorText) {
+				model.setProperty("/tcodeState", ValueState.Error);
+				model.setProperty("/tcodeStateText", errorText);
+				(this.byId("transactionCodeInput") as Input).focus();
 				return;
 			}
-			(item as IconTabFilter).setVisible(
-				visibleGroups.includes((item as IconTabFilter).getKey())
-			);
-		});
-	}
-
-	private applyTheme(theme: string): void {
-		switch (theme) {
-			case "Light":
-				DarkModeHelper.toLight();
-				this.local.dark = false;
-				break;
-			case "Dark":
-				DarkModeHelper.toDark();
-				this.local.dark = true;
-				break;
-			case "System":
-			default: {
-				const prefersDarkScheme = window.matchMedia(
-					"(prefers-color-scheme: dark)"
-				).matches;
-				if (prefersDarkScheme) {
-					DarkModeHelper.toDark();
-					this.local.dark = true;
-				} else {
-					DarkModeHelper.toLight();
-					this.local.dark = false;
-				}
-				break;
-			}
 		}
-	}
 
-	private handleEditTransaction(
-		tcode: string,
-		title: string,
-		description: string
-	): void {
-		const dialog = this.createEditTransactionDialog(tcode, title, description);
-		this.getView().addDependent(dialog);
-		dialog.open();
-	}
-
-	private createEditTransactionDialog(
-		tcode: string,
-		title: string,
-		description: string
-	): Dialog {
-		const inputTitle = new Input({
-			width: "100%",
-			value: title,
-		});
-		const inputDescription = new Input({
-			width: "100%",
-			value: description,
-		});
-
-		const dialog = new Dialog({
-			title: `Edit Transaction ${tcode}`,
-			content: [
-				new VBox({
-					items: [
-						new Label({ text: "Title", labelFor: "titleInput" }),
-						inputTitle,
-						new Label({ text: "Description", labelFor: "descriptionInput" }),
-						inputDescription,
-					],
-				}).addStyleClass("sapUiSmallMargin"),
-			],
-			beginButton: new Button({
-				text: "Save",
-				press: () => {
-					void this.handleUpdateTransaction(
-						tcode,
-						inputTitle.getValue(),
-						inputDescription.getValue()
-					);
-					dialog.close();
-					dialog.destroy();
-				},
-			}),
-			endButton: new Button({
-				text: "Cancel",
-				press: () => {
-					dialog.close();
-					dialog.destroy();
-				},
-			}),
-			draggable: true,
-		});
-
-		return dialog;
-	}
-
-	private async handleUpdateTransaction(
-		tcode: string,
-		title: string,
-		description: string
-	) {
-		await this.db.updateTransaction(tcode, title, description);
-		await this.refresh();
-	}
-
-	private filterTable(): void {
-		const table = this.byId("transactionTable") as Table;
-		const binding = table.getBinding("items") as ListBinding;
-		const selectedTag = this.local.selectedTag;
-
-		if (selectedTag === "ALL") {
-			const availableTags = JSON.parse(
-				localStorage.getItem("visibleGroups") || "[]"
-			) as string[];
-			const filters: Filter[] = [];
-			availableTags.forEach((tag) => {
-				filters.push(new Filter("tags", FilterOperator.Contains, tag));
-			});
-			binding.filter(
-				[
-					new Filter({
-						filters,
-						and: false,
-					}),
-				],
-				"Application"
-			);
+		try {
+			if (form.mode === "add") {
+				await this.database.addCustomTransaction({ tcode, title, description, tags: CUSTOM_GROUP });
+			} else {
+				await this.database.updateCustomTransaction(tcode, { title, description });
+			}
+		} catch (error) {
+			this.showError("transactionSaveFailed", error);
 			return;
 		}
 
-		const filter = new Filter("tags", FilterOperator.Contains, selectedTag);
-		binding.filter([filter], "Application");
+		(await this.getTransactionDialog()).close();
+		MessageToast.show(
+			this.getText(form.mode === "add" ? "transactionAdded" : "transactionUpdated", [tcode])
+		);
+		await this.refresh();
 	}
 
-	public onIconTabBarSelect(event: IconTabBar$SelectEvent): void {
-		const selectedKey = event.getSource().getSelectedKey();
-		const table = this.byId("transactionTable") as Table;
+	private validateTcode(tcode: string): string | undefined {
+		if (tcode === "") {
+			return this.getText("tcodeRequired");
+		}
+		if (/\s/.test(tcode)) {
+			return this.getText("tcodeInvalid");
+		}
+		if (this.entries.some((entry) => entry.tcode === tcode)) {
+			return this.getText("tcodeExists", [tcode]);
+		}
+		return undefined;
+	}
 
-		table.setMode(selectedKey === "CUSTOM" ? "MultiSelect" : "None");
-		this.filterTable();
+	private async openTransactionDialog(
+		form: Omit<TransactionForm, "tcodeState" | "tcodeStateText">
+	): Promise<void> {
+		const dialog = await this.getTransactionDialog();
+		this.getTransactionFormModel().setData({
+			...form,
+			tcodeState: ValueState.None,
+			tcodeStateText: "",
+		} satisfies TransactionForm);
+		dialog.open();
+	}
+
+	private getTransactionDialog(): Promise<Dialog> {
+		this.transactionDialog ??= this.loadFragment({
+			name: "de.kernich.tcode.view.fragments.TransactionDialog",
+		}).then((content) => {
+			const dialog = content as Dialog;
+			dialog.setModel(new JSONModel(), "dialog");
+			return dialog;
+		});
+		return this.transactionDialog;
+	}
+
+	private getTransactionFormModel(): JSONModel {
+		return (this.byId("transactionDialog") as Dialog).getModel("dialog") as JSONModel;
+	}
+
+	private getTransactionForm(): TransactionForm {
+		return this.getTransactionFormModel().getData() as TransactionForm;
+	}
+
+	private applySettings(settings: Settings): void {
+		this.settings = settings;
+		saveSettings(settings);
+		this.getOwnerComponent().getThemeManager().setThemeSetting(settings.theme);
+		this.updateGroupVisibility();
+		this.applyFilters();
 		this.focusSearch();
 	}
 
-	private async updateTabCounts(searchQuery?: string) {
-		const customTransactions = await this.db.getTransactions();
-		const transactions = [...this.standardTransactions, ...customTransactions];
+	private updateGroupVisibility(): void {
+		const groupVisible = Object.fromEntries(
+			GROUPS.map((group) => [group, this.settings.visibleGroups.includes(group)])
+		);
+		this.viewModel.setProperty("/groupVisible", groupVisible);
 
-		const filteredTransactions = searchQuery
-			? transactions.filter(
-					(t) =>
-						t.tcode.toLowerCase().includes(searchQuery.toLowerCase()) ||
-						t.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-						t.description.toLowerCase().includes(searchQuery.toLowerCase())
-			  )
-			: transactions;
-
-		const counts = {
-			allCount: 0,
-			generalCount: filteredTransactions.filter((t) =>
-				t.tags.includes("GENERAL")
-			).length,
-			ui5Count: filteredTransactions.filter((t) => t.tags.includes("UI5"))
-				.length,
-			abapCount: filteredTransactions.filter((t) => t.tags.includes("ABAP"))
-				.length,
-			ewmCount: filteredTransactions.filter((t) => t.tags.includes("EWM"))
-				.length,
-			erpCount: filteredTransactions.filter((t) => t.tags.includes("ERP"))
-				.length,
-			fiCount: filteredTransactions.filter((t) => t.tags.includes("FI")).length,
-			customCount: filteredTransactions.filter((t) => t.tags.includes("CUSTOM"))
-				.length,
-		};
-
-		const visibleGroups: string[] = JSON.parse(
-			localStorage.getItem("visibleGroups") || "[]"
-		) as string[];
-
-		filteredTransactions.forEach((transaction) => {
-			const groups = transaction.tags.split(",");
-			if (groups.some((group) => visibleGroups.includes(group))) {
-				counts.allCount++;
-			}
-		});
-
-		Object.assign(this.local, counts);
-	}
-
-	public onOpenGitHub(): void {
-		Util.openUrl(Constants.GITHUB_URL);
-	}
-
-	public onOpenLinkedIn(): void {
-		Util.openUrl(Constants.LINKEDIN_URL);
-	}
-
-	private async handleExport() {
-		try {
-			const settings = {
-				copyOption: localStorage.getItem("copyOption"),
-				sapSystemUrl: localStorage.getItem("sapSystemUrl"),
-				resetSearchAfterCopy: localStorage.getItem("resetSearchAfterCopy"),
-				theme: localStorage.getItem("theme"),
-				visibleGroups: JSON.parse(
-					localStorage.getItem("visibleGroups") || "[]"
-				) as string[],
-			};
-
-			const customTransactions = await this.db.getTransactions();
-			const favoriteTransactions = await this.db.getFavoriteTransactions();
-
-			const exportData = {
-				settings,
-				customTransactions,
-				favoriteTransactions,
-			};
-
-			const jsonString = JSON.stringify(exportData, null, 2);
-			const blob = new Blob([jsonString], { type: "application/json" });
-			const url = URL.createObjectURL(blob);
-			const a = document.createElement("a");
-			a.href = url;
-			a.download = "tcode-settings.json";
-			document.body.appendChild(a);
-			a.click();
-			document.body.removeChild(a);
-			URL.revokeObjectURL(url);
-
-			MessageToast.show("Settings exported successfully");
-		} catch (error) {
-			MessageBox.error(
-				`Failed to export settings: ${
-					error instanceof Error ? error.message : "Unknown error occurred"
-				}`
-			);
+		const selectedGroup = this.viewModel.getProperty("/selectedGroup") as string;
+		if (selectedGroup !== ALL_GROUPS && !groupVisible[selectedGroup]) {
+			this.viewModel.setProperty("/selectedGroup", ALL_GROUPS);
+			this.viewModel.setProperty("/selectedCount", 0);
 		}
 	}
 
-	private async handleImport(data: ImportData) {
-		try {
-			if (data.settings) {
-				Object.entries(data.settings).forEach(([key, value]) => {
-					if (typeof value === "object") {
-						localStorage.setItem(key, JSON.stringify(value));
-					} else if (value !== undefined && value !== null) {
-						localStorage.setItem(key, String(value));
-					}
-				});
-			}
+	private async exportData(): Promise<void> {
+		const [customTransactions, favorites] = this.database.isOpen()
+			? await Promise.all([this.database.getCustomTransactions(), this.database.getFavorites()])
+			: [[], []];
+		const data = createExportData(this.settings, customTransactions, favorites);
+		FileUtil.save(JSON.stringify(data, null, 2), "tcode-settings", "json", "application/json", "utf-8");
+	}
 
-			if (data.customTransactions) {
-				await this.db.clearTransactions();
-				for (const transaction of data.customTransactions) {
-					await this.db.addTransaction(transaction);
-				}
-			}
-
-			if (data.favoriteTransactions) {
-				await this.db.clearFavorites();
-				for (const transaction of data.favoriteTransactions) {
-					await this.db.addFavorite(transaction.tcode);
-				}
-			}
-
-			this.applyTheme(data.settings?.theme || "System");
-			await this.refresh();
-		} catch (error) {
-			throw new Error(
-				error instanceof Error ? error.message : "Unknown error occurred"
-			);
+	private async importData(data: ImportData): Promise<void> {
+		if (data.customTransactions || data.favorites) {
+			await this.database.replaceAll({
+				customTransactions: data.customTransactions,
+				favorites: data.favorites,
+			});
 		}
+		if (data.settings) {
+			this.applySettings(sanitizeSettings(data.settings, this.settings));
+		}
+		await this.refresh();
+	}
+
+	private async showWelcomeDialog(): Promise<void> {
+		if (isWelcomeDialogDismissed()) {
+			return;
+		}
+		const dialog = (await this.loadFragment({
+			name: "de.kernich.tcode.view.fragments.WelcomeDialog",
+		})) as Dialog;
+		dialog.open();
+	}
+
+	private focusSearch(): void {
+		// Avoid opening the on-screen keyboard on touch devices
+		if (Device.system.desktop) {
+			(this.byId("searchField") as SearchField).focus();
+		}
+	}
+
+	private updateSelectedCount(): void {
+		this.viewModel.setProperty("/selectedCount", this.getTable().getSelectedContexts().length);
+	}
+
+	private getEntry(context: Context | null | undefined): TransactionEntry | undefined {
+		return context?.getObject() as TransactionEntry | undefined;
+	}
+
+	private getTable(): Table {
+		return this.byId("transactionTable") as Table;
+	}
+
+	private getItemsBinding(): ListBinding {
+		return this.getTable().getBinding("items") as ListBinding;
+	}
+
+	private showError(textKey: string, error: unknown): void {
+		const message = getErrorMessage(error);
+		Log.error(this.getText(textKey), message, LOG_COMPONENT);
+		MessageBox.error(this.getText(textKey), { details: message });
 	}
 }

@@ -1,40 +1,56 @@
 <core:FragmentDefinition
-    xmlns="sap.m"
-    xmlns:core="sap.ui.core"
+	xmlns="sap.m"
+	xmlns:core="sap.ui.core"
 >
-    <OverflowToolbar>
-        <core:Icon
-            src="sap-icon://sap-ui5"
-            size="3rem"
-        />
-        <Title text="T-Code Quick Finder" />
-        <ToolbarSpacer />
-        <SearchField
-            placeholder="Search for transaction..."
-            liveChange=".onSearch"
-            width="500px"
-            id="IdSearchField"
-        />
-        <ToolbarSpacer />
-        <Button
-            icon="sap-icon://action-settings"
-            press=".onOpenSettings"
-            tooltip="Open settings"
-            text="Settings"
-            type="Transparent"
-        />
-        <ToolbarSeparator />
-        <Button
-            icon="{= ${local>/dark} === true ? 'img/github-brands-w.svg' : 'img/github-brands.svg' }"
-            text="View on GitHub"
-            press=".onOpenGitHub"
-            tooltip="GitHub Repository"
-        />
-        <Button
-            icon="{= ${local>/dark} ? 'img/linkedin-brands-w.svg' : 'img/linkedin-brands.svg' }"
-            text="Mario Kernich"
-            press=".onOpenLinkedIn"
-            tooltip="LinkedIn Profile"
-        />
-    </OverflowToolbar>
+	<OverflowToolbar>
+		<core:Icon
+			src="sap-icon://sap-ui5"
+			size="3rem"
+		/>
+		<Title
+			text="{i18n>appTitle}"
+			level="H1"
+		/>
+		<ToolbarSpacer />
+		<SearchField
+			id="searchField"
+			value="{view>/query}"
+			placeholder="{i18n>searchPlaceholder}"
+			liveChange=".onSearch"
+			search=".onSearch"
+			width="100%"
+		>
+			<layoutData>
+				<OverflowToolbarLayoutData
+					shrinkable="true"
+					minWidth="8rem"
+					maxWidth="30rem"
+					priority="NeverOverflow"
+				/>
+			</layoutData>
+		</SearchField>
+		<ToolbarSpacer />
+		<Button
+			icon="sap-icon://action-settings"
+			text="{i18n>settingsButton}"
+			tooltip="{i18n>settingsButtonTooltip}"
+			type="Transparent"
+			press=".onOpenSettings"
+		/>
+		<ToolbarSeparator />
+		<Button
+			icon="{view>/githubIcon}"
+			iconDensityAware="false"
+			text="{i18n>githubButton}"
+			tooltip="{i18n>githubButtonTooltip}"
+			press=".onOpenGitHub"
+		/>
+		<Button
+			icon="{view>/linkedinIcon}"
+			iconDensityAware="false"
+			text="Mario Kernich"
+			tooltip="{i18n>linkedinButtonTooltip}"
+			press=".onOpenLinkedIn"
+		/>
+	</OverflowToolbar>
 </core:FragmentDefinition>
