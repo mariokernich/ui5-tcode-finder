@@ -24,6 +24,10 @@ const REMOVE_PATTERNS = [
 	/^resources\/.*\/designtime\//,
 	// High contrast themes, the app only applies sap_horizon and sap_horizon_dark
 	/^resources\/.*\/themes\/(sap_hcb|sap_horizon_hcb|sap_horizon_hcw)\//,
+	// Texts and locale data of other languages. webapp/ui5-config.js starts UI5 in English or German,
+	// and UI5 falls back to English if the files of a language set by URL parameter are missing.
+	/^resources\/.*\/messagebundle_(?!en|de)[^/]*\.properties$/,
+	/^resources\/sap\/ui\/core\/cldr\/(?!en|de)[^/]*\.json$/,
 ];
 
 /**
@@ -61,10 +65,24 @@ function isThemeOfMissingLibrary(file, files) {
 	return files.every((other) => !other.startsWith(libraryFolder) || other.startsWith(`${libraryFolder}themes/`));
 }
 
+/**
+ * The framework contains empty placeholder files that keep folders in its repository
+ */
+async function isEmpty(file) {
+	return (await stat(join(DIST, file))).size === 0;
+}
+
 const files = await listFiles(DIST);
-const obsolete = files.filter(
-	(file) => REMOVE_PATTERNS.some((pattern) => pattern.test(file)) || isThemeOfMissingLibrary(file, files)
-);
+const obsolete = [];
+for (const file of files) {
+	if (
+		REMOVE_PATTERNS.some((pattern) => pattern.test(file)) ||
+		isThemeOfMissingLibrary(file, files) ||
+		(file.startsWith("resources/") && (await isEmpty(file)))
+	) {
+		obsolete.push(file);
+	}
+}
 await Promise.all(obsolete.map((file) => rm(join(DIST, file))));
 await removeEmptyFolders(DIST);
 
