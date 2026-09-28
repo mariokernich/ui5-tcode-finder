@@ -16,6 +16,7 @@ const META_TAG = `<meta name="tcode-service-worker" content="${SERVICE_WORKER}" 
  */
 const PRECACHE_PATTERNS = [
 	/^index\.html$/,
+	/^ui5-config\.js$/,
 	/^manifest\.webmanifest$/,
 	/^model\/transactions\.json$/,
 	/^i18n\/i18n(_de)?\.properties$/,
@@ -34,6 +35,7 @@ const PRECACHE_PATTERNS = [
  */
 const REQUIRED_FILES = [
 	"index.html",
+	"ui5-config.js",
 	"manifest.webmanifest",
 	"resources/sap-ui-custom.js",
 	"resources/sap/ui/core/themes/sap_horizon/library.css",

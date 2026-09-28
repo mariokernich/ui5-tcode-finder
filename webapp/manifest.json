@@ -6,7 +6,7 @@
 		"type": "application",
 		"i18n": {
 			"bundleName": "de.kernich.tcode.i18n.i18n",
-			"supportedLocales": [""],
+			"supportedLocales": ["", "de"],
 			"fallbackLocale": ""
 		},
 		"title": "{{appTitle}}",
@@ -64,7 +64,7 @@
 				"type": "sap.ui.model.resource.ResourceModel",
 				"settings": {
 					"bundleName": "de.kernich.tcode.i18n.i18n",
-					"supportedLocales": [""],
+					"supportedLocales": ["", "de"],
 					"fallbackLocale": ""
 				}
 			},

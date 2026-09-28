@@ -33,6 +33,13 @@ export default defineConfig(
 		},
 	},
 	{
+		// Scripts that run in the browser before UI5 is loaded
+		files: ["webapp/**/*.js"],
+		languageOptions: {
+			globals: globals.browser,
+		},
+	},
+	{
 		files: ["scripts/service-worker.js"],
 		languageOptions: {
 			globals: globals.serviceworker,
