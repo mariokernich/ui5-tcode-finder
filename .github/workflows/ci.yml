@@ -59,11 +59,17 @@ jobs:
     needs: verify
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
+    timeout-minutes: 90
     # GitHub does not show an environment URL that contains a secret, e.g. the FTP user
     environment: production
     concurrency:
       group: deploy-production
       cancel-in-progress: false
+    # The web server aborted a long FTPS session, and the FTP action records the deployed files
+    # only after a complete upload. Therefore the build is uploaded in parts with their own state
+    # file on the server, and each part gets a second attempt. The app including index.html comes
+    # last, so the previous version stays online if a part of the framework fails.
+    # The third-party FTP action gets the credentials and is pinned to a commit.
     steps:
       - name: Download build
         uses: actions/download-artifact@v8
@@ -71,9 +77,112 @@ jobs:
           name: dist
           path: dist
 
-      - name: Upload files via FTPS
-        # Third-party action with access to the FTP credentials, pinned to the commit of v4.4.0
-        uses: SamKirkland/FTP-Deploy-Action@3a9c65ae0fc12ac924ccef8afc26941cc43aad0b
+      - name: Upload OpenUI5 (sap.m)
+        id: upload-m
+        continue-on-error: true
+        uses: SamKirkland/FTP-Deploy-Action@3a9c65ae0fc12ac924ccef8afc26941cc43aad0b # v4.4.0
+        with:
+          server: tcodes.kernich.de
+          username: ${{ secrets.FTP_USER }}
+          password: ${{ secrets.FTP_PASS }}
+          protocol: ftps
+          local-dir: ./dist/resources/sap/m/
+          server-dir: /resources/sap/m/
+          exclude: |
+            themes/**
+
+      - name: Upload OpenUI5 (sap.m), second attempt
+        if: steps.upload-m.outcome == 'failure'
+        uses: SamKirkland/FTP-Deploy-Action@3a9c65ae0fc12ac924ccef8afc26941cc43aad0b # v4.4.0
+        with:
+          server: tcodes.kernich.de
+          username: ${{ secrets.FTP_USER }}
+          password: ${{ secrets.FTP_PASS }}
+          protocol: ftps
+          local-dir: ./dist/resources/sap/m/
+          server-dir: /resources/sap/m/
+          exclude: |
+            themes/**
+
+      - name: Upload OpenUI5 (sap.m themes)
+        id: upload-m-themes
+        continue-on-error: true
+        uses: SamKirkland/FTP-Deploy-Action@3a9c65ae0fc12ac924ccef8afc26941cc43aad0b # v4.4.0
+        with:
+          server: tcodes.kernich.de
+          username: ${{ secrets.FTP_USER }}
+          password: ${{ secrets.FTP_PASS }}
+          protocol: ftps
+          local-dir: ./dist/resources/sap/m/themes/
+          server-dir: /resources/sap/m/themes/
+
+      - name: Upload OpenUI5 (sap.m themes), second attempt
+        if: steps.upload-m-themes.outcome == 'failure'
+        uses: SamKirkland/FTP-Deploy-Action@3a9c65ae0fc12ac924ccef8afc26941cc43aad0b # v4.4.0
+        with:
+          server: tcodes.kernich.de
+          username: ${{ secrets.FTP_USER }}
+          password: ${{ secrets.FTP_PASS }}
+          protocol: ftps
+          local-dir: ./dist/resources/sap/m/themes/
+          server-dir: /resources/sap/m/themes/
+
+      - name: Upload OpenUI5 (sap.ui.core)
+        id: upload-core
+        continue-on-error: true
+        uses: SamKirkland/FTP-Deploy-Action@3a9c65ae0fc12ac924ccef8afc26941cc43aad0b # v4.4.0
+        with:
+          server: tcodes.kernich.de
+          username: ${{ secrets.FTP_USER }}
+          password: ${{ secrets.FTP_PASS }}
+          protocol: ftps
+          local-dir: ./dist/resources/sap/ui/core/
+          server-dir: /resources/sap/ui/core/
+
+      - name: Upload OpenUI5 (sap.ui.core), second attempt
+        if: steps.upload-core.outcome == 'failure'
+        uses: SamKirkland/FTP-Deploy-Action@3a9c65ae0fc12ac924ccef8afc26941cc43aad0b # v4.4.0
+        with:
+          server: tcodes.kernich.de
+          username: ${{ secrets.FTP_USER }}
+          password: ${{ secrets.FTP_PASS }}
+          protocol: ftps
+          local-dir: ./dist/resources/sap/ui/core/
+          server-dir: /resources/sap/ui/core/
+
+      - name: Upload OpenUI5 (other libraries)
+        id: upload-resources
+        continue-on-error: true
+        uses: SamKirkland/FTP-Deploy-Action@3a9c65ae0fc12ac924ccef8afc26941cc43aad0b # v4.4.0
+        with:
+          server: tcodes.kernich.de
+          username: ${{ secrets.FTP_USER }}
+          password: ${{ secrets.FTP_PASS }}
+          protocol: ftps
+          local-dir: ./dist/resources/
+          server-dir: /resources/
+          exclude: |
+            sap/m/**
+            sap/ui/core/**
+
+      - name: Upload OpenUI5 (other libraries), second attempt
+        if: steps.upload-resources.outcome == 'failure'
+        uses: SamKirkland/FTP-Deploy-Action@3a9c65ae0fc12ac924ccef8afc26941cc43aad0b # v4.4.0
+        with:
+          server: tcodes.kernich.de
+          username: ${{ secrets.FTP_USER }}
+          password: ${{ secrets.FTP_PASS }}
+          protocol: ftps
+          local-dir: ./dist/resources/
+          server-dir: /resources/
+          exclude: |
+            sap/m/**
+            sap/ui/core/**
+
+      - name: Upload app
+        id: upload-app
+        continue-on-error: true
+        uses: SamKirkland/FTP-Deploy-Action@3a9c65ae0fc12ac924ccef8afc26941cc43aad0b # v4.4.0
         with:
           server: tcodes.kernich.de
           username: ${{ secrets.FTP_USER }}
@@ -81,3 +190,18 @@ jobs:
           protocol: ftps
           local-dir: ./dist/
           server-dir: /
+          exclude: |
+            resources/**
+
+      - name: Upload app, second attempt
+        if: steps.upload-app.outcome == 'failure'
+        uses: SamKirkland/FTP-Deploy-Action@3a9c65ae0fc12ac924ccef8afc26941cc43aad0b # v4.4.0
+        with:
+          server: tcodes.kernich.de
+          username: ${{ secrets.FTP_USER }}
+          password: ${{ secrets.FTP_PASS }}
+          protocol: ftps
+          local-dir: ./dist/
+          server-dir: /
+          exclude: |
+            resources/**
