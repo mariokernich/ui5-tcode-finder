@@ -59,9 +59,8 @@ jobs:
     needs: verify
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
-    environment:
-      name: production
-      url: https://tcodes.kernich.de
+    # GitHub does not show an environment URL that contains a secret, e.g. the FTP user
+    environment: production
     concurrency:
       group: deploy-production
       cancel-in-progress: false
