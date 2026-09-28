@@ -145,6 +145,45 @@ QUnit.test("replaces the data atomically", async function (this: Context, assert
 	assert.strictEqual((await this.database.getCustomTransactions()).length, 1, "only the given data is replaced");
 });
 
+QUnit.test("records the usage of the most recently used transactions", async function (this: Context, assert) {
+	await this.database.open();
+	await this.database.recordUsage("SE80", 3, 1);
+	await this.database.recordUsage("SE11", 3, 2);
+	await this.database.recordUsage("SE38", 3, 3);
+	await this.database.recordUsage("SE80", 3, 4);
+	await this.database.recordUsage("SU01", 3, 5);
+
+	const usage = (await this.database.getUsage()).sort((a, b) => b.lastUsed - a.lastUsed);
+	assert.deepEqual(
+		usage.map((record) => record.tcode),
+		["SU01", "SE80", "SE38"],
+		"the least recently used transaction is forgotten"
+	);
+
+	await this.database.clearUsage();
+	assert.deepEqual(await this.database.getUsage(), []);
+});
+
+QUnit.test("deletes favorite and usage of deleted custom transactions", async function (this: Context, assert) {
+	await this.database.open();
+	await this.database.addCustomTransaction({ tcode: "ZFOO", title: "", description: "", tags: "CUSTOM" });
+	await this.database.addCustomTransaction({ tcode: "SE80", title: "", description: "", tags: "CUSTOM" });
+	await this.database.setFavorite("ZFOO", true);
+	await this.database.setFavorite("SE80", true);
+	await this.database.recordUsage("ZFOO");
+	await this.database.recordUsage("SE80");
+
+	// SE80 is a standard transaction as well, its favorite and usage remain
+	await this.database.deleteCustomTransactions(["ZFOO", "SE80"], ["ZFOO"]);
+
+	assert.deepEqual(await this.database.getCustomTransactions(), []);
+	assert.deepEqual(await this.database.getFavorites(), ["SE80"]);
+	assert.deepEqual(
+		(await this.database.getUsage()).map((record) => record.tcode),
+		["SE80"]
+	);
+});
+
 QUnit.test("migrates a database of version 1 to upper case transaction codes", async function (this: Context, assert) {
 	await createVersion1Database(this.name, {
 		transactions: [
@@ -164,4 +203,5 @@ QUnit.test("migrates a database of version 1 to upper case transaction codes", a
 
 	await this.database.setFavorite("STMS", false);
 	assert.deepEqual(await this.database.getFavorites(), ["/UI2/FLP", "SE80"], "migrated keys can be deleted");
+	assert.deepEqual(await this.database.getUsage(), [], "the usage store of version 3 exists");
 });

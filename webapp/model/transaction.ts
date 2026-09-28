@@ -1,4 +1,4 @@
-import { ALL_GROUPS, CUSTOM_GROUP, GROUPS } from "../Constants";
+import { ALL_GROUPS, CUSTOM_GROUP, GROUPS, RECENT_GROUP } from "../Constants";
 
 export interface Transaction {
 	tcode: string;
@@ -16,6 +16,10 @@ export interface Transaction {
 export interface TransactionEntry extends Transaction {
 	favorite: boolean;
 	custom: boolean;
+	/**
+	 * Time of the last use in milliseconds, undefined if the transaction was not used recently
+	 */
+	lastUsed?: number;
 }
 
 /**
@@ -97,14 +101,15 @@ export function matchesQuery(transaction: Transaction, query: string): boolean {
 
 /**
  * Counts the transactions matching the query per group. The pseudo group {@link ALL_GROUPS}
- * counts the transactions that belong to at least one visible group.
+ * counts the transactions that belong to at least one visible group, {@link RECENT_GROUP} the
+ * recently used transactions.
  */
 export function countByGroup(
-	transactions: readonly Transaction[],
+	transactions: readonly (Transaction & Pick<TransactionEntry, "lastUsed">)[],
 	query: string,
 	visibleGroups: readonly string[]
 ): Record<string, number> {
-	const counts: Record<string, number> = { [ALL_GROUPS]: 0 };
+	const counts: Record<string, number> = { [ALL_GROUPS]: 0, [RECENT_GROUP]: 0 };
 	GROUPS.forEach((group) => (counts[group] = 0));
 
 	transactions
@@ -112,12 +117,15 @@ export function countByGroup(
 		.forEach((transaction) => {
 			const groups = getGroups(transaction.tags);
 			groups.forEach((group) => {
-				if (group in counts && group !== ALL_GROUPS) {
+				if ((GROUPS as readonly string[]).includes(group)) {
 					counts[group]++;
 				}
 			});
 			if (groups.some((group) => visibleGroups.includes(group))) {
 				counts[ALL_GROUPS]++;
+			}
+			if (transaction.lastUsed !== undefined) {
+				counts[RECENT_GROUP]++;
 			}
 		});
 

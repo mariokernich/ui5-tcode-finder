@@ -1,3 +1,4 @@
+import { RECENT_LIMIT } from "../Constants";
 import { normalizeTcode, type Transaction } from "../model/transaction";
 
 const DEFAULT_NAME = "TCodeDB_2";
@@ -5,15 +6,25 @@ const DEFAULT_NAME = "TCodeDB_2";
  * Version history:
  * 1. Stores for custom transactions and favorites
  * 2. Transaction codes are stored in upper case
+ * 3. Store for the recently used transactions
  */
-const VERSION = 2;
+const VERSION = 3;
 
 const TRANSACTIONS = "transactions";
 const FAVORITES = "favorites";
-type StoreName = typeof TRANSACTIONS | typeof FAVORITES;
+const USAGE = "usage";
+type StoreName = typeof TRANSACTIONS | typeof FAVORITES | typeof USAGE;
 
 interface FavoriteRecord {
 	tcode: string;
+}
+
+export interface UsageRecord {
+	tcode: string;
+	/**
+	 * Time of the last use in milliseconds
+	 */
+	lastUsed: number;
 }
 
 type Work<T> = (transaction: IDBTransaction, abort: (reason: Error) => void) => T;
@@ -50,6 +61,9 @@ function upgrade(db: IDBDatabase, transaction: IDBTransaction, oldVersion: numbe
 	if (oldVersion < 2) {
 		normalizeKeys(transaction.objectStore(TRANSACTIONS));
 		normalizeKeys(transaction.objectStore(FAVORITES));
+	}
+	if (oldVersion < 3) {
+		db.createObjectStore(USAGE, { keyPath: "tcode" });
 	}
 }
 
@@ -112,6 +126,10 @@ export default class Database {
 		return records.map((record) => record.tcode);
 	}
 
+	public async getUsage(): Promise<UsageRecord[]> {
+		return (await this.readAll(USAGE)) as UsageRecord[];
+	}
+
 	/**
 	 * Adds a custom transaction. Fails with a `ConstraintError` if the transaction code exists already.
 	 */
@@ -140,17 +158,46 @@ export default class Database {
 	}
 
 	/**
-	 * Deletes custom transactions and the given favorites in one database transaction.
+	 * Deletes custom transactions in one database transaction.
+	 *
+	 * @param orphanedTcodes Transaction codes whose favorite and usage records are deleted as well
 	 */
 	public deleteCustomTransactions(
 		tcodes: readonly string[],
-		favoritesToRemove: readonly string[] = []
+		orphanedTcodes: readonly string[] = []
 	): Promise<void> {
-		return this.run([TRANSACTIONS, FAVORITES], "readwrite", (tx) => {
+		return this.run([TRANSACTIONS, FAVORITES, USAGE], "readwrite", (tx) => {
 			const transactions = tx.objectStore(TRANSACTIONS);
 			tcodes.forEach((tcode) => transactions.delete(tcode));
 			const favorites = tx.objectStore(FAVORITES);
-			favoritesToRemove.forEach((tcode) => favorites.delete(tcode));
+			const usage = tx.objectStore(USAGE);
+			orphanedTcodes.forEach((tcode) => {
+				favorites.delete(tcode);
+				usage.delete(tcode);
+			});
+		});
+	}
+
+	/**
+	 * Records the use of a transaction and forgets the least recently used transactions that exceed the limit.
+	 */
+	public recordUsage(tcode: string, limit = RECENT_LIMIT, lastUsed = Date.now()): Promise<void> {
+		return this.run([USAGE], "readwrite", (tx) => {
+			const store = tx.objectStore(USAGE);
+			store.put({ tcode, lastUsed } satisfies UsageRecord);
+			const request = store.getAll();
+			request.onsuccess = () => {
+				(request.result as UsageRecord[])
+					.sort((a, b) => b.lastUsed - a.lastUsed)
+					.slice(limit)
+					.forEach((record) => store.delete(record.tcode));
+			};
+		});
+	}
+
+	public clearUsage(): Promise<void> {
+		return this.run([USAGE], "readwrite", (tx) => {
+			tx.objectStore(USAGE).clear();
 		});
 	}
 

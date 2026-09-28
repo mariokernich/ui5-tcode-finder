@@ -10,7 +10,7 @@
 >
 	<Page
 		id="page"
-		showFooter="{= ${view>/selectedGroup} === 'CUSTOM' }"
+		showFooter="{= ${view>/selectedGroup} === 'CUSTOM' || ${view>/selectedGroup} === 'RECENT' }"
 		busy="{view>/busy}"
 		busyIndicatorDelay="0"
 	>
@@ -34,6 +34,11 @@
 						key="ALL"
 						icon="sap-icon://multiselect-all"
 						text="{ parts: ['i18n>groupTab', 'i18n>group.ALL', 'view>/counts/ALL'], formatter: 'formatMessage' }"
+					/>
+					<IconTabFilter
+						key="RECENT"
+						icon="sap-icon://history"
+						text="{ parts: ['i18n>groupTab', 'i18n>group.RECENT', 'view>/counts/RECENT'], formatter: 'formatMessage' }"
 					/>
 					<IconTabFilter
 						key="GENERAL"
@@ -81,13 +86,7 @@
 			</IconTabBar>
 			<Table
 				id="transactionTable"
-				items="{
-					path: '/',
-					sorter: [
-						{ path: 'favorite', descending: true },
-						{ path: 'tcode' }
-					]
-				}"
+				items="{ path: '/' }"
 				mode="{= ${view>/selectedGroup} === 'CUSTOM' ? 'MultiSelect' : 'None' }"
 				itemPress=".onItemPress"
 				selectionChange=".onSelectionChange"
@@ -145,6 +144,7 @@
 					tooltip="{i18n>deleteTransactionsTooltip}"
 					type="Reject"
 					enabled="{= ${view>/selectedCount} > 0 }"
+					visible="{= ${view>/selectedGroup} === 'CUSTOM' }"
 					press=".onDeleteTransactions"
 				/>
 				<Button
@@ -152,7 +152,16 @@
 					text="{i18n>newTransaction}"
 					tooltip="{i18n>newTransactionTooltip}"
 					type="Ghost"
+					visible="{= ${view>/selectedGroup} === 'CUSTOM' }"
 					press=".onAddTransaction"
+				/>
+				<Button
+					id="clearRecentButton"
+					icon="sap-icon://clear-all"
+					text="{i18n>clearRecent}"
+					tooltip="{i18n>clearRecentTooltip}"
+					visible="{= ${view>/selectedGroup} === 'RECENT' }"
+					press=".onClearRecent"
 				/>
 			</OverflowToolbar>
 		</footer>

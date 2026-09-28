@@ -27,6 +27,7 @@ const STORAGE_KEYS = [
 	"doNotShowWelcomeDialog",
 ];
 let storageBackup: Record<string, string | null> = {};
+let originalWriteText: Clipboard["writeText"] | undefined;
 
 function deleteDatabase(name: string): Promise<void> {
 	return new Promise((resolve) => {
@@ -67,10 +68,23 @@ export default class MainPage extends Opa5 {
 		});
 	}
 
+	iStubTheClipboard(): void {
+		this.waitFor({
+			success: () => {
+				// The headless browser does not grant the permission to write to the clipboard
+				originalWriteText = navigator.clipboard.writeText.bind(navigator.clipboard);
+				navigator.clipboard.writeText = () => Promise.resolve();
+			},
+		});
+	}
+
 	iTeardownTheApp(): void {
 		this.iTeardownMyUIComponent();
 		this.waitFor({
 			success: () => {
+				if (originalWriteText) {
+					navigator.clipboard.writeText = originalWriteText;
+				}
 				Object.entries(storageBackup).forEach(([key, value]) => {
 					if (value === null) {
 						localStorage.removeItem(key);
@@ -139,6 +153,16 @@ export default class MainPage extends Opa5 {
 		});
 	}
 
+	iPressTheTransaction(tcode: string): void {
+		this.waitFor({
+			controlType: "sap.m.ColumnListItem",
+			viewName,
+			matchers: (control: UI5Element) => getTransaction(control as ListItemBase).tcode === tcode,
+			actions: new Press(),
+			errorMessage: `Did not find the transaction ${tcode}`,
+		});
+	}
+
 	iSelectTheTransaction(tcode: string): void {
 		this.waitFor({
 			controlType: "sap.m.ColumnListItem",
@@ -146,6 +170,15 @@ export default class MainPage extends Opa5 {
 			matchers: (control: UI5Element) => getTransaction(control as ListItemBase).tcode === tcode,
 			actions: new Press({ idSuffix: "selectMulti" }),
 			errorMessage: `Did not find the transaction ${tcode}`,
+		});
+	}
+
+	iPressTheClearListButton(): void {
+		this.waitFor({
+			id: "clearRecentButton",
+			viewName,
+			actions: new Press(),
+			errorMessage: "Did not find the Clear List button",
 		});
 	}
 

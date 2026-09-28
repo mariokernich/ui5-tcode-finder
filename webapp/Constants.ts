@@ -16,3 +16,13 @@ export const CUSTOM_GROUP: Group = "CUSTOM";
  * Key of the pseudo group that contains the transactions of all visible groups
  */
 export const ALL_GROUPS = "ALL";
+
+/**
+ * Key of the pseudo group that contains the recently used transactions
+ */
+export const RECENT_GROUP = "RECENT";
+
+/**
+ * Maximum number of recently used transactions that are remembered
+ */
+export const RECENT_LIMIT = 20;

@@ -60,6 +60,13 @@ QUnit.test("countByGroup applies the query and counts only visible groups for AL
 	assert.strictEqual(counts.ABAP, 0, "SE80 does not match the query");
 });
 
+QUnit.test("countByGroup counts the recently used transactions", (assert) => {
+	const [se80, flp, su01] = transactions;
+	const used = [{ ...se80, lastUsed: 2 }, { ...flp, lastUsed: 1 }, su01];
+	assert.strictEqual(countByGroup(used, "", ["ABAP"]).RECENT, 2);
+	assert.strictEqual(countByGroup(used, "launchpad", ["ABAP"]).RECENT, 1, "the query applies");
+});
+
 QUnit.test("toCustomTransaction sanitizes untrusted data", (assert) => {
 	assert.deepEqual(
 		toCustomTransaction({

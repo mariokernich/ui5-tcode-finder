@@ -19,7 +19,8 @@ import Filter from "sap/ui/model/Filter";
 import FilterType from "sap/ui/model/FilterType";
 import JSONModel from "sap/ui/model/json/JSONModel";
 import type ListBinding from "sap/ui/model/ListBinding";
-import { ALL_GROUPS, CUSTOM_GROUP, GITHUB_URL, GROUPS, LINKEDIN_URL } from "../Constants";
+import Sorter from "sap/ui/model/Sorter";
+import { ALL_GROUPS, CUSTOM_GROUP, GITHUB_URL, GROUPS, LINKEDIN_URL, RECENT_GROUP } from "../Constants";
 import {
 	SEARCH_FIELDS,
 	containsQuery,
@@ -31,7 +32,7 @@ import {
 	type Transaction,
 	type TransactionEntry,
 } from "../model/transaction";
-import Database from "../util/Database";
+import Database, { type UsageRecord } from "../util/Database";
 import { copyToClipboard, openUrl } from "../util/browser";
 import { confirmAction, getErrorMessage } from "../util/messages";
 import {
@@ -94,6 +95,7 @@ export default class Main extends BaseController {
 	private entries: TransactionEntry[] = [];
 	private shiftKeyPressed = false;
 	private savingTransaction = false;
+	private sortedByRecency?: boolean;
 	private transactionDialog?: Promise<Dialog>;
 	private settingsDialog?: SettingsDialog;
 
@@ -277,7 +279,7 @@ export default class Main extends BaseController {
 			return;
 		}
 
-		// Keep the favorite if a standard transaction with the same code exists
+		// Keep favorite and usage if a standard transaction with the same code exists
 		const standardTcodes = new Set(this.standardTransactions.map((transaction) => transaction.tcode));
 		try {
 			await this.database.deleteCustomTransactions(
@@ -290,6 +292,17 @@ export default class Main extends BaseController {
 		}
 		MessageToast.show(this.getText("transactionsDeleted", [tcodes.length]));
 		await this.refresh();
+	}
+
+	public async onClearRecent(): Promise<void> {
+		try {
+			await this.database.clearUsage();
+			await this.updateUsage();
+		} catch (error) {
+			this.showError("clearRecentFailed", error);
+			return;
+		}
+		MessageToast.show(this.getText("recentCleared"));
 	}
 
 	// -----------------------------------------------------------------------------------------
@@ -370,18 +383,22 @@ export default class Main extends BaseController {
 	private async refresh(): Promise<void> {
 		let customTransactions: Transaction[] = [];
 		let favorites: string[] = [];
+		let usage: UsageRecord[] = [];
 		if (this.database.isOpen()) {
-			[customTransactions, favorites] = await Promise.all([
+			[customTransactions, favorites, usage] = await Promise.all([
 				this.database.getCustomTransactions(),
 				this.database.getFavorites(),
+				this.database.getUsage(),
 			]);
 		}
 
 		const favoriteTcodes = new Set(favorites);
+		const lastUsed = new Map(usage.map((record) => [record.tcode, record.lastUsed]));
 		const toEntry = (transaction: Transaction, custom: boolean): TransactionEntry => ({
 			...transaction,
 			custom,
 			favorite: favoriteTcodes.has(transaction.tcode),
+			lastUsed: lastUsed.get(transaction.tcode),
 		});
 		this.entries = [
 			...this.standardTransactions.map((transaction) => toEntry(transaction, false)),
@@ -400,14 +417,7 @@ export default class Main extends BaseController {
 
 	private applyFilters(): void {
 		const { query, selectedGroup } = this.viewModel.getData() as ViewState;
-		const groups = selectedGroup === ALL_GROUPS ? this.settings.visibleGroups : [selectedGroup];
-		const filters = [
-			new Filter({
-				path: "tags",
-				test: (tags: unknown) => typeof tags === "string" && isInAnyGroup(tags, groups),
-				caseSensitive: true,
-			}),
-		];
+		const filters = [this.createGroupFilter(selectedGroup)];
 
 		const normalizedQuery = normalizeQuery(query);
 		if (normalizedQuery) {
@@ -427,10 +437,64 @@ export default class Main extends BaseController {
 		}
 
 		this.getItemsBinding().filter(new Filter({ filters, and: true }), FilterType.Application);
-		this.viewModel.setProperty(
-			"/counts",
-			countByGroup(this.entries, query, this.settings.visibleGroups)
+		this.applySorting(selectedGroup === RECENT_GROUP);
+		this.updateCounts();
+	}
+
+	private createGroupFilter(group: string): Filter {
+		if (group === RECENT_GROUP) {
+			// Transactions that were not used recently have no value and are filtered out
+			return new Filter({ path: "lastUsed", test: (lastUsed: unknown) => typeof lastUsed === "number" });
+		}
+		const groups = group === ALL_GROUPS ? this.settings.visibleGroups : [group];
+		return new Filter({
+			path: "tags",
+			test: (tags: unknown) => typeof tags === "string" && isInAnyGroup(tags, groups),
+			caseSensitive: true,
+		});
+	}
+
+	/**
+	 * Sorts recently used transactions by the time of use, all others alphabetically with the favorites first.
+	 */
+	private applySorting(byRecency: boolean): void {
+		if (this.sortedByRecency === byRecency) {
+			return;
+		}
+		this.sortedByRecency = byRecency;
+		this.getItemsBinding().sort(
+			byRecency ? [new Sorter("lastUsed", true)] : [new Sorter("favorite", true), new Sorter("tcode")]
 		);
+	}
+
+	private updateCounts(): void {
+		const { query } = this.viewModel.getData() as ViewState;
+		this.viewModel.setProperty("/counts", countByGroup(this.entries, query, this.settings.visibleGroups));
+	}
+
+	/**
+	 * Remembers the use of a transaction for the list of recently used transactions.
+	 */
+	private async recordUsage(tcode: string): Promise<void> {
+		if (!this.database.isOpen()) {
+			return;
+		}
+		try {
+			await this.database.recordUsage(tcode);
+			await this.updateUsage();
+		} catch (error) {
+			// The list is a convenience, the transaction was copied or opened anyway
+			Log.warning("The usage could not be recorded", getErrorMessage(error), LOG_COMPONENT);
+		}
+	}
+
+	private async updateUsage(): Promise<void> {
+		const usage = await this.database.getUsage();
+		const lastUsed = new Map(usage.map((record) => [record.tcode, record.lastUsed]));
+		this.entries.forEach((entry) => (entry.lastUsed = lastUsed.get(entry.tcode)));
+		// Forces the table to filter and sort again
+		this.transactionModel.refresh(true);
+		this.updateCounts();
 	}
 
 	private async copyOrOpen(tcode: string): Promise<void> {
@@ -439,6 +503,7 @@ export default class Main extends BaseController {
 		if (copyOption === CopyOption.WebGui) {
 			if (sapSystemUrl) {
 				openUrl(buildWebGuiUrl(sapSystemUrl, tcode));
+				void this.recordUsage(tcode);
 			} else {
 				MessageToast.show(this.getText("systemUrlMissing"));
 			}
@@ -454,6 +519,7 @@ export default class Main extends BaseController {
 			return;
 		}
 		MessageToast.show(this.getText("transactionCopied", [text]));
+		void this.recordUsage(tcode);
 
 		if (resetSearchAfterCopy) {
 			this.resetSearch();

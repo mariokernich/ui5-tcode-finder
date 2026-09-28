@@ -30,6 +30,22 @@ opaTest("Should keep the group filter while searching", function () {
 	onTheMainPage.theTableShouldHaveAsManyItemsAsTheGroupCount("ABAP");
 });
 
+opaTest("Should list the recently used transactions", function () {
+	onTheMainPage.iStubTheClipboard();
+	onTheMainPage.iSelectTheGroup("ALL");
+	onTheMainPage.iPressTheTransaction("SE80");
+	onTheMainPage.iPressTheTransaction("SU01");
+	onTheMainPage.iSelectTheGroup("RECENT");
+
+	onTheMainPage.theTableShouldContain("SE80");
+	onTheMainPage.theTableShouldContain("SU01");
+	onTheMainPage.theTableShouldHaveAsManyItemsAsTheGroupCount("RECENT");
+
+	onTheMainPage.iPressTheClearListButton();
+
+	onTheMainPage.theTableShouldNotContain("SE80");
+});
+
 opaTest("Should add and delete a custom transaction", function () {
 	onTheMainPage.iSelectTheGroup("CUSTOM");
 	onTheMainPage.iPressTheNewButton();
