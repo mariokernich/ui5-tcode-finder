@@ -1,5 +1,18 @@
 # Changelog
 
+## Version 1.3.0
+
+### Added
+
+- "Recent" tab with the 20 transactions that were copied or opened last
+- The app can be installed as progressive web app and works offline; new versions are offered for reload
+- German user interface for browsers that prefer German
+
+### Changed
+
+- OpenUI5 is part of the app instead of being loaded from the SAP CDN, the app does not request third-party servers for the user interface anymore
+- The deployment contains only the files the app can request at runtime
+
 ## Version 1.2.0
 
 ### Fixed

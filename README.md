@@ -16,13 +16,16 @@ This project is designed to help developers quickly find and manage T-Codes nece
 - **Copy to Clipboard**: Easily copy T-Codes to the clipboard by clicking on a table row.
 - **Copy behavior**: Just copy the T-Code, add an /n or /o prefix (/o while the Shift key is pressed) or open them directly in SAP GUI for HTML (WebGUI).
 - **Favorite Management**: Mark T-Codes as favorites to keep them at the top of the list.
+- **Recently Used**: The RECENT tab lists the 20 T-Codes you copied or opened last.
 - **Add Custom T-Codes**: Add your own T-Codes with descriptions in the CUSTOM group. Use the right click context menu to edit existing ones.
 - **Theme Selection**: Choose between light, dark or the theme of your operating system.
 - **Group Visibility**: Select which groups of transactions are displayed.
 - **Import/Export**: Transfer your settings, favorites and custom T-Codes to another browser.
+- **Offline Use**: Install the app from your browser (progressive web app); it works without an internet connection and offers new versions for reload.
+- **English and German**: The user interface uses German if your browser prefers it and English otherwise. The URL parameter `sap-ui-language=de` or `sap-ui-language=en` overrides this.
 - **Responsive Design**: Optimized for both desktop and mobile devices.
 
-Favorites and custom T-Codes are stored in the IndexedDB and the settings in the local storage of your browser. No data is sent to a server.
+Favorites, custom and recently used T-Codes are stored in the IndexedDB and the settings in the local storage of your browser. No data is sent to a server. The UI5 framework is part of the app, no third-party CDN is involved.
 
 ## Demo
 
@@ -57,33 +60,21 @@ In the browser, you can directly debug the original TypeScript code, which is su
 
 ## Building the App
 
-### Unoptimized Build
-
-To build the project and get an app that can be deployed, run:
+To build the app that is deployed, run:
 
 ```sh
 npm run build
 ```
 
-The result is placed into the `dist` folder. To start the generated package, run:
+The build is self-contained: it bundles the app with the required parts of OpenUI5 into `dist/resources/sap-ui-custom.js` and contains the other framework files the app may load, like themes and message bundles. Afterwards, [prune-build.mjs](scripts/prune-build.mjs) removes files that are never requested at runtime, like debug sources and theme sources, and [generate-service-worker.mjs](scripts/generate-service-worker.mjs) creates the service worker for offline use. The build reports missing modules of the UI5 support tools, which the app does not need.
+
+To start the built app, run:
 
 ```sh
 npm run start:dist
 ```
 
-### Optimized Build
-
-For an optimized self-contained build, run:
-
-```sh
-npm run build:opt
-```
-
-To start the generated package, run:
-
-```sh
-npm run start:dist
-```
+It is available at [http://localhost:8090/index.html](http://localhost:8090/index.html). The service worker is only registered by the built app, the development server always serves the current sources. It uses its own port because a service worker controls all pages of its origin.
 
 ## Code Quality
 
@@ -99,7 +90,7 @@ The unit tests (QUnit) and the integration tests (OPA5) can also be run in the b
 
 ## UI5 Version
 
-The app uses the long-term maintenance version OpenUI5 1.148 and loads it from the SAP CDN. When updating the version, change it consistently in [index.html](webapp/index.html), [manifest.json](webapp/manifest.json) (`minUI5Version`), the `ui5*.yaml` files and the `@openui5/types` dependency. Versions are removed from the CDN some time after the end of their maintenance, see the [version overview](https://sdk.openui5.org/versionoverview.html).
+The app uses the long-term maintenance version OpenUI5 1.148, see the [version overview](https://sdk.openui5.org/versionoverview.html). The development server, the tests and the build use the version of [ui5.yaml](ui5.yaml). When updating the version, change it consistently in [ui5.yaml](ui5.yaml), [ui5-coverage.yaml](ui5-coverage.yaml), [manifest.json](webapp/manifest.json) (`minUI5Version`) and the `@openui5/types` dependency.
 
 ## Deployment
 
