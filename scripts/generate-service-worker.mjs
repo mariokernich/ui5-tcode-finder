@@ -12,7 +12,8 @@ const META_TAG = `<meta name="tcode-service-worker" content="${SERVICE_WORKER}" 
 
 /**
  * Files the app loads when it starts, for both themes and languages. Other files are cached at
- * runtime when they are requested for the first time.
+ * runtime when they are requested for the first time, like resources/sap-ui-version.json: it
+ * contains the build time, which must not create a new version of the service worker.
  */
 const PRECACHE_PATTERNS = [
 	/^index\.html$/,
@@ -21,7 +22,7 @@ const PRECACHE_PATTERNS = [
 	/^model\/transactions\.json$/,
 	/^i18n\/i18n(_de)?\.properties$/,
 	/^img\/(?!og-image).+\.(svg|png|ico)$/,
-	/^resources\/sap-ui-(custom\.js|version\.json)$/,
+	/^resources\/sap-ui-custom\.js$/,
 	/^resources\/sap\/ui\/core\/(ComponentSupport|date\/Gregorian|boot\/\w+Endpoint)\.js$/,
 	/^resources\/sap\/ui\/(layout|unified)\/library-preload-lazy\.js$/,
 	/^resources\/sap\/ui\/core\/cldr\/(en|de)\.json$/,

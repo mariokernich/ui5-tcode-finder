@@ -66,7 +66,7 @@ To build the app that is deployed, run:
 npm run build
 ```
 
-The build is self-contained: it bundles the app with the required parts of OpenUI5 into `dist/resources/sap-ui-custom.js` and contains the other framework files the app may load, like themes and message bundles. Afterwards, [prune-build.mjs](scripts/prune-build.mjs) removes files that are never requested at runtime, like debug sources and theme sources, and [generate-service-worker.mjs](scripts/generate-service-worker.mjs) creates the service worker for offline use. The build reports missing modules of the UI5 support tools, which the app does not need.
+The build is self-contained: it bundles the app with the required parts of OpenUI5 into `dist/resources/sap-ui-custom.js` and contains the other framework files the app may load, like themes and message bundles. Afterwards, [prune-build.mjs](scripts/prune-build.mjs) removes files that are never requested at runtime, like debug sources and theme sources, and [generate-service-worker.mjs](scripts/generate-service-worker.mjs) creates the service worker for offline use. The build contains the version information of the libraries (`resources/sap-ui-version.json`) but no build timestamps, so identical sources result in identical files and installed apps are only offered updates that change something. The build reports missing modules of the UI5 support tools, which the app does not need.
 
 To start the built app, run:
 
