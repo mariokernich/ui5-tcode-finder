@@ -4,13 +4,15 @@ export type MessageBoxAction = (typeof MessageBox.Action)[keyof typeof MessageBo
 
 /**
  * Asks the user to confirm an action. Resolves with `true` if the given action was chosen.
+ *
+ * @param action Standard action or text of a custom action
  */
-export function confirmAction(message: string, action: MessageBoxAction): Promise<boolean> {
+export function confirmAction(message: string, action: MessageBoxAction | string): Promise<boolean> {
 	return new Promise((resolve) => {
 		MessageBox.confirm(message, {
 			actions: [action, MessageBox.Action.CANCEL],
 			emphasizedAction: action,
-			onClose: (chosenAction: string | null) => resolve(chosenAction === (action as string)),
+			onClose: (chosenAction: string | null) => resolve(chosenAction === action),
 		});
 	});
 }

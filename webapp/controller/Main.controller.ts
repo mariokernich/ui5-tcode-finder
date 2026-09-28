@@ -48,6 +48,7 @@ import {
 	type ImportData,
 	type Settings,
 } from "../util/settings";
+import { registerServiceWorker } from "../util/serviceWorker";
 import { isDarkTheme } from "../util/ThemeManager";
 import BaseController from "./BaseController";
 import SettingsDialog from "./SettingsDialog";
@@ -354,7 +355,16 @@ export default class Main extends BaseController {
 			this.viewModel.setProperty("/busy", false);
 		}
 		this.focusSearch();
+		registerServiceWorker((activate) => void this.promptForUpdate(activate)).catch((error: unknown) => {
+			Log.warning("The service worker could not be registered", getErrorMessage(error), LOG_COMPONENT);
+		});
 		await this.showWelcomeDialog();
+	}
+
+	private async promptForUpdate(activate: () => void): Promise<void> {
+		if (await confirmAction(this.getText("updateAvailable"), this.getText("updateReload"))) {
+			activate();
+		}
 	}
 
 	private async loadStandardTransactions(): Promise<Transaction[]> {

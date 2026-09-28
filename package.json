@@ -15,7 +15,7 @@
 	},
 	"scripts": {
 		"clean": "rimraf dist coverage report",
-		"build": "ui5 build self-contained --all --clean-dest && node scripts/prune-build.mjs",
+		"build": "ui5 build self-contained --all --clean-dest && node scripts/prune-build.mjs && node scripts/generate-service-worker.mjs",
 		"start": "ui5 serve --port 8080 -o index.html",
 		"start:coverage": "ui5 serve --port 8080 --config ui5-coverage.yaml",
 		"start:dist": "ui5 serve --port 8090 -o index.html --config ui5-dist.yaml",

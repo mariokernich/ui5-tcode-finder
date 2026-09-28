@@ -31,5 +31,11 @@ export default defineConfig(
 		languageOptions: {
 			globals: globals.node,
 		},
+	},
+	{
+		files: ["scripts/service-worker.js"],
+		languageOptions: {
+			globals: globals.serviceworker,
+		},
 	}
 );
